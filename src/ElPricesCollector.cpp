@@ -8,11 +8,7 @@
 
 ElPricesCollector::ElPricesCollector() : keepRunningBool_(true)
 {
-    auto lambda = [this]()
-    {
-        this->keepUpdated();
-    };
-    updatingThread_ = std::thread(lambda);
+    updatingThread_ = std::thread(&ElPricesCollector::keepUpdated,this);
 }
 
 ElPricesCollector::~ElPricesCollector()
