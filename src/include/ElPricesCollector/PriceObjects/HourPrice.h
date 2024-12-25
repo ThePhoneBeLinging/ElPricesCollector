@@ -11,6 +11,9 @@ class HourPrice
 {
 public:
     HourPrice(int priceWithoutFees, int fees);
+    [[nodiscard]] int getPriceWithoutFees() const;
+    [[nodiscard]] int getFees() const;
+
 private:
     int priceWithoutFees_;
     int fees_;

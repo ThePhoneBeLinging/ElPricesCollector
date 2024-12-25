@@ -8,3 +8,13 @@
 HourPrice::HourPrice(int priceWithoutFees, int fees) : priceWithoutFees_(priceWithoutFees), fees_(fees)
 {
 }
+
+int HourPrice::getPriceWithoutFees() const
+{
+    return priceWithoutFees_;
+}
+
+int HourPrice::getFees() const
+{
+    return fees_;
+}
