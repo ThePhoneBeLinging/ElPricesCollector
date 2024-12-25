@@ -6,6 +6,8 @@
 
 #include <iostream>
 
+#include "TimeUtil.h"
+
 ElPricesCollector::ElPricesCollector() : keepRunningBool_(true), storageController_(std::make_shared<ElPricesStorageController>())
 {
     updatingThread_ = std::thread(&ElPricesCollector::keepUpdated,this);
@@ -19,7 +21,10 @@ ElPricesCollector::~ElPricesCollector()
 
 std::shared_ptr<HourPrice> ElPricesCollector::getCurrentPrice()
 {
-    return nullptr;
+    auto currentTime = TimeUtil::getCurrentTime();
+    auto timeString = TimeUtil::timeToString(currentTime);
+
+    return storageController_->getDate(timeString)->getPriceAtPoint(currentTime.tm_hour);
 }
 
 void ElPricesCollector::keepUpdated()

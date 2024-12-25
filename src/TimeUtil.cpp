@@ -29,6 +29,12 @@ tm TimeUtil::getTommorowTime()
     return timeToTM(now);
 }
 
+std::string TimeUtil::timeToString(tm time)
+{
+    std::string timeString = std::to_string(time.tm_year) + "-" + std::to_string(time.tm_mon) + "-" + std::to_string(time.tm_mday);
+    return timeString;
+}
+
 tm TimeUtil::timeToTM(const std::chrono::time_point<std::chrono::system_clock> time)
 {
     time_t tt = std::chrono::system_clock::to_time_t(time);
