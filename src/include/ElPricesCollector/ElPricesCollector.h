@@ -8,7 +8,7 @@
 #include <atomic>
 #include <thread>
 
-#include "../../ElPricesStorageController.h"
+#include "ElPricesCollector/ElPricesStorageController.h"
 
 class ElPricesCollector
 {
