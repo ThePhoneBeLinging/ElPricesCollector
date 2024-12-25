@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-ElPricesCollector::ElPricesCollector() : keepRunningBool_(true)
+ElPricesCollector::ElPricesCollector() : keepRunningBool_(true), storageController_(std::make_shared<ElPricesStorageController>())
 {
     updatingThread_ = std::thread(&ElPricesCollector::keepUpdated,this);
 }
@@ -15,6 +15,11 @@ ElPricesCollector::~ElPricesCollector()
 {
     keepRunningBool_ = false;
     updatingThread_.join();
+}
+
+std::shared_ptr<ElPricesStorageController>& ElPricesCollector::getStorageController()
+{
+    return storageController_;
 }
 
 void ElPricesCollector::keepUpdated()
