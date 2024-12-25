@@ -3,3 +3,7 @@
 //
 
 #include "HourPrice.h"
+
+HourPrice::HourPrice(int priceWithoutFees, int fees) : priceWithoutFees_(priceWithoutFees), fees_(fees)
+{
+}

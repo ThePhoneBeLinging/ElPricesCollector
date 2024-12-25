@@ -10,8 +10,10 @@
 class HourPrice
 {
 public:
-    HourPrice();
+    HourPrice(int priceWithoutFees, int fees);
 private:
+    int priceWithoutFees_;
+    int fees_;
 };
 
 

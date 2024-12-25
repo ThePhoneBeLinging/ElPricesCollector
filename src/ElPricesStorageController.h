@@ -13,6 +13,8 @@ class ElPricesStorageController
 {
 public:
     ElPricesStorageController() = default;
+    void storeDate(const std::string& dateKey, const std::shared_ptr<Date>& date);
+    std::shared_ptr<Date> getDate(const std::string& dateKey);
 private:
     std::unordered_map<std::string,std::shared_ptr<Date>> datesMap_;
 };
