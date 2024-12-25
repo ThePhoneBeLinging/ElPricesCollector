@@ -2,7 +2,7 @@
 // Created by Elias Aggergaard Larsen on 25/12/2024.
 //
 
-#include "ElPricesCollector.h"
+#include "include/ElPricesCollector/ElPricesCollector.h"
 
 #include <iostream>
 
