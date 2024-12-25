@@ -6,13 +6,10 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_library(ElPricesCollector STATIC
         ElPricesCollector.cpp
-        include/ElPricesCollector/ElPricesCollector.h
         ElPricesStorageController.cpp
-        ElPricesStorageController.h
-        PriceObjects/HourPrice.cpp
-        PriceObjects/HourPrice.h
-        PriceObjects/Date.cpp
-        PriceObjects/Date.h
+        HourPrice.cpp
+        Date.cpp
+        TimeUtil.cpp
 )
 
 target_include_directories(ElPricesCollector PUBLIC include)

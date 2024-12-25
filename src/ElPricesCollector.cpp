@@ -17,9 +17,9 @@ ElPricesCollector::~ElPricesCollector()
     updatingThread_.join();
 }
 
-std::shared_ptr<ElPricesStorageController>& ElPricesCollector::getStorageController()
+std::shared_ptr<HourPrice> ElPricesCollector::getCurrentPrice()
 {
-    return storageController_;
+    return nullptr;
 }
 
 void ElPricesCollector::keepUpdated()

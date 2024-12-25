@@ -9,6 +9,7 @@
 #include <thread>
 
 #include "ElPricesCollector/ElPricesStorageController.h"
+#include "PriceObjects/HourPrice.h"
 
 class ElPricesCollector
 {
@@ -16,7 +17,7 @@ public:
     ElPricesCollector();
     ~ElPricesCollector();
 
-    std::shared_ptr<ElPricesStorageController>& getStorageController();
+    std::shared_ptr<HourPrice> getCurrentPrice();
 
 private:
     void keepUpdated();
