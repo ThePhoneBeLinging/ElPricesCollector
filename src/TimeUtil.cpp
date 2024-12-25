@@ -29,7 +29,7 @@ tm TimeUtil::getTommorowTime()
     return timeToTM(now);
 }
 
-std::string TimeUtil::timeToString(tm time)
+std::string TimeUtil::timeToString(const tm& time)
 {
     std::string timeString = std::to_string(time.tm_year) + "-" + std::to_string(time.tm_mon) + "-" + std::to_string(time.tm_mday);
     return timeString;
