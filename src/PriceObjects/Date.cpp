@@ -1,0 +1,20 @@
+//
+// Created by Elias Aggergaard Larsen on 25/12/2024.
+//
+
+#include "Date.h"
+
+Date::Date()
+{
+    hourPrices_.resize(24);
+}
+
+void Date::setPriceAtPoint(int hour, const std::shared_ptr<HourPrice>& hourPrice)
+{
+    hourPrices_[hour] = std::make_unique<HourPrice>(*hourPrice);
+}
+
+std::unique_ptr<HourPrice> Date::getPriceAtPoint(int hour) const
+{
+    return std::make_unique<HourPrice>(*hourPrices_[hour]);
+}
