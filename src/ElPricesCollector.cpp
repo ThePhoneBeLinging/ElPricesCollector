@@ -7,6 +7,8 @@
 #include <iostream>
 
 #include "TimeUtil.h"
+#include "cpr/response.h"
+#include "cpr/api.h"
 
 ElPricesCollector::ElPricesCollector() : keepRunningBool_(true), storageController_(std::make_shared<ElPricesStorageController>())
 {
@@ -31,7 +33,13 @@ void ElPricesCollector::keepUpdated()
 {
     while (keepRunningBool_)
     {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        std::cout << "HELLO WORLD \n";
+        std::string currentTimeString = TimeUtil::timeToString(TimeUtil::getCurrentTime());
+        cpr::Response r = cpr::Get(cpr::Url{"https://andelenergi.dk/?obexport_format=csv&obexport_start=" + currentTimeString + "&obexport_end=" + currentTimeString + "&obexport_region=east&obexport_tax=0&obexport_product_id=1%231%23TIMEENERGI"});
+        if (r.status_code != 200)
+        {
+            throw std::invalid_argument("Status code was not 200, it was: " + std::to_string(r.status_code));
+        }
+        storageController_->handleParsedData(r.text);
+        keepRunningBool_ = false;
     }
 }
