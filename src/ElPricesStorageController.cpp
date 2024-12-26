@@ -6,8 +6,46 @@
 
 #include <iostream>
 #include <sstream>
+#include <dispatch/data.h>
 
+#include "TimeUtil.h"
 #include "../../Utility/src/include/Utility/Utility.h"
+
+ElPricesStorageController::ElPricesStorageController()
+{
+    std::string todayLookupString = TimeUtil::timeToStringForLookup(TimeUtil::getCurrentTime());
+    std::string tmrwLookupString = TimeUtil::timeToStringForLookup(TimeUtil::getTommorowTime());
+
+    std::vector<std::string> filesToReadFrom;
+    std::vector<std::vector<std::string>> stringMatrix;
+
+    filesToReadFrom.push_back("../../HistoricData/Prices/" + todayLookupString + ".csv");
+    filesToReadFrom.push_back("../../HistoricData/Prices/" + tmrwLookupString + ".csv");
+    for (const auto& fileName : filesToReadFrom)
+    {
+        std::string fileContent = Utility::readFromFile(fileName);
+        std::stringstream outerStream(fileContent);
+        std::string parsedString;
+        while (getline(outerStream,parsedString,'\n'))
+        {
+            std::stringstream innerStream(parsedString);
+            std::string innerParsed;
+            std::vector<std::string> stringVector;
+            while (getline(innerStream,innerParsed,','))
+            {
+                stringVector.push_back(innerParsed);
+            }
+            stringMatrix.push_back(stringVector);
+        }
+    }
+
+    for (const auto& vector : stringMatrix)
+    {
+        int hour = std::stoi(vector[0]);
+        int priceWithoutFees = std::stoi(vector[1]);
+        int fees = std::stoi(vector[2]);
+    }
+}
 
 void ElPricesStorageController::storeDate(const std::string& dateKey, const std::shared_ptr<Date>& date)
 {
