@@ -74,21 +74,18 @@ void ElPricesStorageController::handleParsedData(const std::string& parsedData)
         std::erase(priceLine[2],',');
         std::erase(priceLine[3],',');
 
-        int priceWithoutTransportString = std::stoi(priceLine[1]);
-        int currentPriceOfTransportString = std::stoi(priceLine[2]);
-        int totalString = std::stoi(priceLine[3]);
+        int priceWithoutTransport = std::stoi(priceLine[1]);
+        int currentPriceOfTransport = std::stoi(priceLine[2]);
+        int total = std::stoi(priceLine[3]);
         std::string dateString = priceLine[4];
         int hour = std::stoi(priceLine[5]);
-        std::cout << "Price: " << priceWithoutTransportString << std::endl;
-        std::cout << dateString << std::endl;
-        std::cout << "Time: " << hour << std::endl;
+        // TODO Take Cerius prices into account :(
+        auto hourPrice = std::make_shared<HourPrice>(priceWithoutTransport,0);
         if (not datesMap_.contains(dateString))
         {
             auto date = std::make_shared<Date>();
             datesMap_[dateString] = date;
         }
-        else
-        {
-        }
+        datesMap_[dateString]->setPriceAtPoint(hour,hourPrice);
     }
 }
