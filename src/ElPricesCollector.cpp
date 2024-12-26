@@ -36,7 +36,6 @@ void ElPricesCollector::keepUpdated()
     std::unique_lock lock(mutex_);
     while (keepRunningBool_)
     {
-        break;
         auto currentTime = TimeUtil::getCurrentTime();
         std::string currentTimeLookupString = TimeUtil::timeToStringForLookup(currentTime);
         std::string currentTimeAPIString = TimeUtil::timeToStringForAPI(currentTime);

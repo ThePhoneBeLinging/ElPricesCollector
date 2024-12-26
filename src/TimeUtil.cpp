@@ -6,6 +6,21 @@
 
 #include <chrono>
 
+std::vector<std::string> TimeUtil::getStringsForTmrwAnd7DaysBack()
+{
+    std::vector<std::string> stringVector;
+
+    // Add tmrw:
+    stringVector.push_back(TimeUtil::timeToStringForLookup(TimeUtil::getTommorowTime()));
+    auto now = std::chrono::system_clock::now();
+    for (int i = 0; i < 7; i++)
+    {
+        stringVector.push_back(timeToStringForLookup(timeToTM(now)));
+        now -= std::chrono::hours(24);
+    }
+    return stringVector;
+}
+
 std::string TimeUtil::getCurrentTimeAsDateString()
 {
     auto now = getCurrentTime();
