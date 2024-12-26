@@ -20,9 +20,13 @@ ElPricesStorageController::ElPricesStorageController()
         std::stringstream innerStream(parsedString);
         std::string innerParsedString;
         std::vector<std::string> stringVector;
-        while (getline(historicPriceStream,innerParsedString,','))
+        while (getline(innerStream,innerParsedString,','))
         {
             stringVector.push_back(innerParsedString);
+        }
+        if (stringVector.empty())
+        {
+            continue;
         }
         stringMatrix.push_back(stringVector);
     }
@@ -113,16 +117,22 @@ void ElPricesStorageController::handleParsedData(const std::string& parsedData)
 
         int priceWithoutTransport = std::stoi(priceLine[1]);
         int currentPriceOfTransport = std::stoi(priceLine[2]);
+        int ceriusFees = 0;
         int total = std::stoi(priceLine[3]);
         std::string dateString = priceLine[4];
         int hour = std::stoi(priceLine[5]);
         // TODO Take Cerius prices into account :(
-        auto hourPrice = std::make_shared<HourPrice>(priceWithoutTransport,0);
+        auto hourPrice = std::make_shared<HourPrice>(priceWithoutTransport,ceriusFees);
         if (datesMap_[dateString] == nullptr)
         {
             auto date = std::make_shared<Date>();
             datesMap_[dateString] = date;
         }
-        datesMap_[dateString]->setPriceAtPoint(hour,hourPrice);
+        if (datesMap_[dateString]->getPriceAtPoint(hour) == nullptr)
+        {
+            std::string savePrice = dateString + "," + std::to_string(hour) + "," + std::to_string(priceWithoutTransport) + "," + std::to_string(ceriusFees) + "\n";
+            Utility::appendToFile("../../historicPrices.csv",savePrice);
+            datesMap_[dateString]->setPriceAtPoint(hour,hourPrice);
+        }
     }
 }

@@ -18,6 +18,10 @@ void Date::setPriceAtPoint(int hour, const std::shared_ptr<HourPrice>& hourPrice
 
 std::unique_ptr<HourPrice> Date::getPriceAtPoint(int hour) const
 {
+    if (hourPrices_[hour] == nullptr)
+    {
+        return nullptr;
+    }
     return std::make_unique<HourPrice>(hourPrices_[hour]->getPriceWithoutFees(),hourPrices_[hour]->getFees());
 }
 

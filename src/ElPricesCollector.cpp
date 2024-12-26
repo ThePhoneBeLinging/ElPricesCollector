@@ -32,7 +32,6 @@ std::shared_ptr<HourPrice> ElPricesCollector::getCurrentPrice()
 
 void ElPricesCollector::keepUpdated()
 {
-    return;
     std::mutex mutex_;
     std::unique_lock lock(mutex_);
     while (keepRunningBool_)
