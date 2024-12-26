@@ -16,6 +16,7 @@ public:
     Date();
     void setPriceAtPoint(int hour, const std::shared_ptr<HourPrice>& hourPrice);
     [[nodiscard]] std::unique_ptr<HourPrice> getPriceAtPoint(int hour) const;
+    bool isDateComplete() const;
 private:
     std::vector<std::unique_ptr<HourPrice>> hourPrices_;
 };

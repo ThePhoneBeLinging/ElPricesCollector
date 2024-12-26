@@ -83,7 +83,7 @@ void ElPricesStorageController::handleParsedData(const std::string& parsedData)
         int hour = std::stoi(priceLine[5]);
         // TODO Take Cerius prices into account :(
         auto hourPrice = std::make_shared<HourPrice>(priceWithoutTransport,0);
-        if (not datesMap_.contains(dateString))
+        if (datesMap_[dateString] == nullptr)
         {
             auto date = std::make_shared<Date>();
             datesMap_[dateString] = date;

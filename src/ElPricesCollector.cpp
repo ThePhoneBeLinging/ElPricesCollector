@@ -18,6 +18,7 @@ ElPricesCollector::ElPricesCollector() : keepRunningBool_(true), storageControll
 ElPricesCollector::~ElPricesCollector()
 {
     keepRunningBool_ = false;
+    conditionVariable_.notify_all();
     updatingThread_.join();
 }
 
@@ -31,15 +32,40 @@ std::shared_ptr<HourPrice> ElPricesCollector::getCurrentPrice()
 
 void ElPricesCollector::keepUpdated()
 {
+    std::mutex mutex_;
+    std::unique_lock lock(mutex_);
     while (keepRunningBool_)
     {
-        std::string currentTimeString = TimeUtil::timeToStringForAPI(TimeUtil::getCurrentTime());
-        cpr::Response r = cpr::Get(cpr::Url{"https://andelenergi.dk/?obexport_format=csv&obexport_start=" + currentTimeString + "&obexport_end=" + currentTimeString + "&obexport_region=east&obexport_tax=0&obexport_product_id=1%231%23TIMEENERGI"});
+        auto currentTime = TimeUtil::getCurrentTime();
+        std::string currentTimeLookupString = TimeUtil::timeToStringForLookup(currentTime);
+        auto tmrwTime = TimeUtil::getTommorowTime();
+        std::string tmrwLookUpString = TimeUtil::timeToStringForLookup(tmrwTime);
+        if (storageController_->getDate(currentTimeLookupString) != nullptr && storageController_->getDate(currentTimeLookupString)->isDateComplete())
+        {
+            if (storageController_->getDate(tmrwLookUpString) != nullptr && storageController_->getDate(tmrwLookUpString)->isDateComplete())
+            {
+                conditionVariable_.wait_for(lock, std::chrono::hours(1));
+                continue;
+            }
+
+            int timeOfTmrwPriceRelease = 13;
+            if (currentTime.tm_hour < timeOfTmrwPriceRelease)
+            {
+                conditionVariable_.wait_for(lock, std::chrono::hours(1));
+                continue;
+            }
+        }
+
+        std::string currentTimeAPIString = TimeUtil::timeToStringForAPI(currentTime);
+        std::string tmrwTimeString = TimeUtil::timeToStringForAPI(TimeUtil::getTommorowTime());
+        cpr::Response r = cpr::Get(cpr::Url{"https://andelenergi.dk/?obexport_format=csv&obexport_start=" + currentTimeAPIString + "&obexport_end=" + tmrwTimeString + "&obexport_region=east&obexport_tax=0&obexport_product_id=1%231%23TIMEENERGI"});
         if (r.status_code != 200)
         {
             throw std::invalid_argument("Status code was not 200, it was: " + std::to_string(r.status_code));
         }
+        std::cout << r.text << std::endl;
         storageController_->handleParsedData(r.text);
-        keepRunningBool_ = false;
+
+        conditionVariable_.wait_for(lock, std::chrono::hours(1));
     }
 }
