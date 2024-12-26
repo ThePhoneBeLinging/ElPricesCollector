@@ -24,7 +24,7 @@ ElPricesCollector::~ElPricesCollector()
 std::shared_ptr<HourPrice> ElPricesCollector::getCurrentPrice()
 {
     auto currentTime = TimeUtil::getCurrentTime();
-    auto timeString = TimeUtil::timeToString(currentTime);
+    auto timeString = TimeUtil::timeToStringForLookup(currentTime);
 
     return storageController_->getDate(timeString)->getPriceAtPoint(currentTime.tm_hour);
 }
@@ -33,7 +33,7 @@ void ElPricesCollector::keepUpdated()
 {
     while (keepRunningBool_)
     {
-        std::string currentTimeString = TimeUtil::timeToString(TimeUtil::getCurrentTime());
+        std::string currentTimeString = TimeUtil::timeToStringForAPI(TimeUtil::getCurrentTime());
         cpr::Response r = cpr::Get(cpr::Url{"https://andelenergi.dk/?obexport_format=csv&obexport_start=" + currentTimeString + "&obexport_end=" + currentTimeString + "&obexport_region=east&obexport_tax=0&obexport_product_id=1%231%23TIMEENERGI"});
         if (r.status_code != 200)
         {

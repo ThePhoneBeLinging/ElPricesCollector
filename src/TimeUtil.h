@@ -14,7 +14,8 @@ public:
     static std::string getCurrentTimeAsDateString();
     static tm getCurrentTime();
     static tm getTommorowTime();
-    static std::string timeToString(const tm& time);
+    static std::string timeToStringForAPI(const tm& time);
+    static std::string timeToStringForLookup(const tm& time);
 private:
     static tm timeToTM(std::chrono::time_point<std::chrono::system_clock> time);
 };
