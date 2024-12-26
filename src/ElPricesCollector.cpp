@@ -32,32 +32,16 @@ std::shared_ptr<HourPrice> ElPricesCollector::getCurrentPrice()
 
 void ElPricesCollector::keepUpdated()
 {
+    return;
     std::mutex mutex_;
     std::unique_lock lock(mutex_);
     while (keepRunningBool_)
     {
         auto currentTime = TimeUtil::getCurrentTime();
         std::string currentTimeLookupString = TimeUtil::timeToStringForLookup(currentTime);
-        auto tmrwTime = TimeUtil::getTommorowTime();
-        std::string tmrwLookUpString = TimeUtil::timeToStringForLookup(tmrwTime);
-        if (storageController_->getDate(currentTimeLookupString) != nullptr && storageController_->getDate(currentTimeLookupString)->isDateComplete())
-        {
-            if (storageController_->getDate(tmrwLookUpString) != nullptr && storageController_->getDate(tmrwLookUpString)->isDateComplete())
-            {
-                conditionVariable_.wait_for(lock, std::chrono::hours(1));
-                continue;
-            }
-
-            int timeOfTmrwPriceRelease = 13;
-            if (currentTime.tm_hour < timeOfTmrwPriceRelease)
-            {
-                conditionVariable_.wait_for(lock, std::chrono::hours(1));
-                continue;
-            }
-        }
-
         std::string currentTimeAPIString = TimeUtil::timeToStringForAPI(currentTime);
-        std::string tmrwTimeString = TimeUtil::timeToStringForAPI(TimeUtil::getTommorowTime());
+        auto tmrwTime = TimeUtil::getTommorowTime();
+        std::string tmrwTimeString = TimeUtil::timeToStringForAPI(tmrwTime);
         cpr::Response r = cpr::Get(cpr::Url{"https://andelenergi.dk/?obexport_format=csv&obexport_start=" + currentTimeAPIString + "&obexport_end=" + tmrwTimeString + "&obexport_region=east&obexport_tax=0&obexport_product_id=1%231%23TIMEENERGI"});
         if (r.status_code != 200)
         {

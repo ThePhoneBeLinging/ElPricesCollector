@@ -7,6 +7,41 @@
 #include <iostream>
 #include <sstream>
 
+#include "../../Utility/src/include/Utility/Utility.h"
+
+ElPricesStorageController::ElPricesStorageController()
+{
+    std::string historicPricesString = Utility::readFromFile("../../historicPrices.csv");
+    std::stringstream historicPriceStream(historicPricesString);
+    std::string parsedString;
+    std::vector<std::vector<std::string>> stringMatrix;
+    while (getline(historicPriceStream,parsedString,'\n'))
+    {
+        std::stringstream innerStream(parsedString);
+        std::string innerParsedString;
+        std::vector<std::string> stringVector;
+        while (getline(historicPriceStream,innerParsedString,','))
+        {
+            stringVector.push_back(innerParsedString);
+        }
+        stringMatrix.push_back(stringVector);
+    }
+    for (const auto& vector : stringMatrix)
+    {
+        std::string dateString = vector[0];
+        int hour = std::stoi(vector[1]);
+        int priceWithoutFees = std::stoi(vector[2]);
+        int fees = std::stoi(vector[3]);
+        if (datesMap_[dateString] == nullptr)
+        {
+            auto date = std::make_shared<Date>();
+            datesMap_[dateString] = date;
+        }
+        auto hourPrice = std::make_shared<HourPrice>(priceWithoutFees,fees);
+        datesMap_[dateString]->setPriceAtPoint(hour,hourPrice);
+    }
+}
+
 void ElPricesStorageController::storeDate(const std::string& dateKey, const std::shared_ptr<Date>& date)
 {
     datesMap_[dateKey] = date;
