@@ -14,11 +14,13 @@ void ElPricesStorageController::storeDate(const std::string& dateKey, const std:
 
 std::shared_ptr<Date> ElPricesStorageController::getDate(const std::string& dateKey)
 {
+    std::lock_guard lockGuard(mutex_);
     return datesMap_[dateKey];
 }
 
 void ElPricesStorageController::handleParsedData(const std::string& parsedData)
 {
+    std::lock_guard lockGuard(mutex_);
     // Split by \n, then by "
     std::string parsedString;
     std::stringstream stringStream(parsedData);
