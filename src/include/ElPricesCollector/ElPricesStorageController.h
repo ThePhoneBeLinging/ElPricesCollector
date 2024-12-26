@@ -12,7 +12,7 @@
 class ElPricesStorageController
 {
 public:
-    ElPricesStorageController();
+    ElPricesStorageController() = default;
     ~ElPricesStorageController() = default;
     void storeDate(const std::string& dateKey, const std::shared_ptr<Date>& date);
     std::shared_ptr<Date> getDate(const std::string& dateKey);

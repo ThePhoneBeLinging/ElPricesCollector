@@ -9,43 +9,6 @@
 
 #include "../../Utility/src/include/Utility/Utility.h"
 
-ElPricesStorageController::ElPricesStorageController()
-{
-    std::string historicPricesString = Utility::readFromFile("../../historicPrices.csv");
-    std::stringstream historicPriceStream(historicPricesString);
-    std::string parsedString;
-    std::vector<std::vector<std::string>> stringMatrix;
-    while (getline(historicPriceStream,parsedString,'\n'))
-    {
-        std::stringstream innerStream(parsedString);
-        std::string innerParsedString;
-        std::vector<std::string> stringVector;
-        while (getline(innerStream,innerParsedString,','))
-        {
-            stringVector.push_back(innerParsedString);
-        }
-        if (stringVector.empty())
-        {
-            continue;
-        }
-        stringMatrix.push_back(stringVector);
-    }
-    for (const auto& vector : stringMatrix)
-    {
-        std::string dateString = vector[0];
-        int hour = std::stoi(vector[1]);
-        int priceWithoutFees = std::stoi(vector[2]);
-        int fees = std::stoi(vector[3]);
-        if (datesMap_[dateString] == nullptr)
-        {
-            auto date = std::make_shared<Date>();
-            datesMap_[dateString] = date;
-        }
-        auto hourPrice = std::make_shared<HourPrice>(priceWithoutFees,fees);
-        datesMap_[dateString]->setPriceAtPoint(hour,hourPrice);
-    }
-}
-
 void ElPricesStorageController::storeDate(const std::string& dateKey, const std::shared_ptr<Date>& date)
 {
     datesMap_[dateKey] = date;
@@ -130,8 +93,8 @@ void ElPricesStorageController::handleParsedData(const std::string& parsedData)
         }
         if (datesMap_[dateString]->getPriceAtPoint(hour) == nullptr)
         {
-            std::string savePrice = dateString + "," + std::to_string(hour) + "," + std::to_string(priceWithoutTransport) + "," + std::to_string(ceriusFees) + "\n";
-            Utility::appendToFile("../../historicPrices.csv",savePrice);
+            std::string savePrice = std::to_string(hour) + "," + std::to_string(priceWithoutTransport) + "," + std::to_string(ceriusFees) + "\n";
+            Utility::appendToFile("../../HistoricData/Prices/" + dateString + ".csv",savePrice);
             datesMap_[dateString]->setPriceAtPoint(hour,hourPrice);
         }
     }
