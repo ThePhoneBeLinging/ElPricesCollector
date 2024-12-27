@@ -20,9 +20,9 @@ add_library(ElPricesCollector STATIC
         ElPricesStorageController.cpp
         HourPrice.cpp
         Date.cpp
-        TimeUtil.cpp
 )
 
 target_include_directories(ElPricesCollector PUBLIC include)
 target_link_libraries(ElPricesCollector PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(ElPricesCollector PRIVATE cpr::cpr)
+target_link_libraries(ElPricesCollector PRIVATE Utility)

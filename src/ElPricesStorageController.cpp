@@ -7,8 +7,8 @@
 #include <iostream>
 #include <sstream>
 
-#include "ElPricesCollector/TimeUtil.h"
-#include "../../Utility/src/include/Utility/Utility.h"
+#include "Utility//TimeUtil.h"
+#include "Utility/Utility.h"
 
 ElPricesStorageController::ElPricesStorageController()
 {
