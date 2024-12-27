@@ -6,6 +6,7 @@
 #define ELPRICESCOLLECTOR_H
 
 #include <atomic>
+#include <condition_variable>
 #include <thread>
 
 #include "ElPricesCollector/ElPricesStorageController.h"
