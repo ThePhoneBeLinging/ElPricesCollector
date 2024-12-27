@@ -2,7 +2,7 @@
 // Created by Elias Aggergaard Larsen on 20/11/2024.
 //
 
-#include "TimeUtil.h"
+#include "ElPricesCollector/TimeUtil.h"
 
 #include <chrono>
 
