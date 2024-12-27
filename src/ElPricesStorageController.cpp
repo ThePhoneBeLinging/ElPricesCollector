@@ -13,7 +13,7 @@
 ElPricesStorageController::ElPricesStorageController()
 {
 
-    std::vector<std::string> datesToRead = TimeUtil::getStringsForTmrwAnd7DaysBack();
+    std::vector<std::string> datesToRead = TimeUtil::getStringsForTmrwAnd14DaysBack();
     std::vector<std::vector<std::string>> stringMatrix;
 
     for (const auto& fileName : datesToRead)
