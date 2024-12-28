@@ -32,7 +32,8 @@ std::shared_ptr<HourPrice> ElPricesCollector::getCurrentPrice()
 
 std::vector<std::shared_ptr<HourPrice>> ElPricesCollector::getPricesAroundCurrentTime()
 {
-    std::vector<std::shared_ptr<HourPrice>> currentPrices;
+    std::vector<std::shared_ptr<HourPrice>> backwardsPrices;
+    std::vector<std::shared_ptr<HourPrice>> forwardsPrices;
     auto backwardsTimePtr = std::chrono::system_clock::now();
     auto forwardsTimePtr = std::chrono::system_clock::now();
     int hoursPastAndPresent = 7;
@@ -44,9 +45,24 @@ std::vector<std::shared_ptr<HourPrice>> ElPricesCollector::getPricesAroundCurren
         tm forwardsTime = TimeUtil::timeToTM(forwardsTimePtr);
         std::string backwardsTimeString = TimeUtil::timeToStringForLookup(backwardsTime);
         std::string forwardsTimeString = TimeUtil::timeToStringForLookup(forwardsTime);
-        currentPrices.push_back(storageController_->getDate(backwardsTimeString)->getPriceAtPoint(backwardsTime.tm_hour));
-        currentPrices.push_back(storageController_->getDate(forwardsTimeString)->getPriceAtPoint(forwardsTime.tm_hour));
+        backwardsPrices.push_back(storageController_->getDate(backwardsTimeString)->getPriceAtPoint(backwardsTime.tm_hour));
+        forwardsPrices.push_back(storageController_->getDate(forwardsTimeString)->getPriceAtPoint(forwardsTime.tm_hour));
     }
+    std::vector<std::shared_ptr<HourPrice>> currentPrices;
+
+    std::reverse(backwardsPrices.begin(), backwardsPrices.end());
+    std::reverse(forwardsPrices.begin(), forwardsPrices.end());
+
+    for (const auto& backwardsPrice : backwardsPrices)
+    {
+        currentPrices.push_back(backwardsPrice);
+    }
+    currentPrices.push_back(getCurrentPrice());
+    for (const auto& forwardsPrice : forwardsPrices)
+    {
+        currentPrices.push_back(forwardsPrice);
+    }
+
     return currentPrices;
 }
 
