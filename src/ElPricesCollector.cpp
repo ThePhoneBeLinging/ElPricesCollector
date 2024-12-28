@@ -30,6 +30,26 @@ std::shared_ptr<HourPrice> ElPricesCollector::getCurrentPrice()
     return storageController_->getDate(timeString)->getPriceAtPoint(currentTime.tm_hour);
 }
 
+std::vector<std::shared_ptr<HourPrice>> ElPricesCollector::getPricesAroundCurrentTime()
+{
+    std::vector<std::shared_ptr<HourPrice>> currentPrices;
+    auto backwardsTimePtr = std::chrono::system_clock::now();
+    auto forwardsTimePtr = std::chrono::system_clock::now();
+    int hoursPastAndPresent = 7;
+    for (int i = 0; i < hoursPastAndPresent; i++)
+    {
+        backwardsTimePtr -= std::chrono::hours(1);
+        forwardsTimePtr += std::chrono::hours(1);
+        tm backwardsTime = TimeUtil::timeToTM(backwardsTimePtr);
+        tm forwardsTime = TimeUtil::timeToTM(forwardsTimePtr);
+        std::string backwardsTimeString = TimeUtil::timeToStringForLookup(backwardsTime);
+        std::string forwardsTimeString = TimeUtil::timeToStringForLookup(forwardsTime);
+        currentPrices.push_back(storageController_->getDate(backwardsTimeString)->getPriceAtPoint(backwardsTime.tm_hour));
+        currentPrices.push_back(storageController_->getDate(forwardsTimeString)->getPriceAtPoint(forwardsTime.tm_hour));
+    }
+    return currentPrices;
+}
+
 void ElPricesCollector::keepUpdated()
 {
     std::mutex mutex_;

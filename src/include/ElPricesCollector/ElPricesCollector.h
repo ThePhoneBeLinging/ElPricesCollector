@@ -19,6 +19,7 @@ public:
     ~ElPricesCollector();
 
     std::shared_ptr<HourPrice> getCurrentPrice();
+    std::vector<std::shared_ptr<HourPrice>> getPricesAroundCurrentTime();
 
 private:
     void keepUpdated();
