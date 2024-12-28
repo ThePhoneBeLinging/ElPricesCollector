@@ -11,10 +11,22 @@
 #include "Utility/Utility.h"
 #include "sqlite3.h"
 
+static int callback(void* data, int argc, char** argv, char** azColName)
+{
+    int i;
+    fprintf(stderr, "%s: ", (const char*)data);
+
+    for (i = 0; i < argc; i++) {
+        printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+    }
+
+    printf("\n");
+    return 0;
+}
+
 ElPricesStorageController::ElPricesStorageController() : db_()
 {
     int dataBaseLoadStatus = sqlite3_open("../../Resources/historicData.db",&db_);
-
     if(dataBaseLoadStatus != SQLITE_OK)
     {
         throw std::invalid_argument("Failed to open database");
@@ -29,8 +41,8 @@ ElPricesStorageController::~ElPricesStorageController()
 void ElPricesStorageController::insertHourPriceToDB(const std::string& dateStringWithHour, const std::shared_ptr<HourPrice>& hourPrice)
 {
     char * errorMessage;
-    std::string sqlInsert = "INSERT INTO Prices(Raw,Fee,Time) VALUES (" + std::to_string(hourPrice->getPriceWithoutFees()) +  ", " + std::to_string(hourPrice->getFees()) + ",'" + dateStringWithHour + "');";
-    sqlite3_exec(db_, sqlInsert.c_str(), NULL, NULL, &errorMessage);
+    std::string sqlInsert = "INSERT OR IGNORE INTO Prices(Raw,Fee,Time) VALUES (" + std::to_string(hourPrice->getPriceWithoutFees()) +  ", " + std::to_string(hourPrice->getFees()) + ",'" + dateStringWithHour + "');";
+    sqlite3_exec(db_, sqlInsert.c_str(), nullptr, nullptr, &errorMessage);
     std::cout << errorMessage << std::endl;
     free(errorMessage);
 }
