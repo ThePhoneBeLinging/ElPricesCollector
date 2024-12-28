@@ -9,63 +9,34 @@
 
 #include "Utility//TimeUtil.h"
 #include "Utility/Utility.h"
+#include "sqlite3.h"
 
-ElPricesStorageController::ElPricesStorageController()
+ElPricesStorageController::ElPricesStorageController() : db_()
 {
+    int dataBaseLoadStatus = sqlite3_open("../../Resources/historicData.db",&db_);
 
-    std::vector<std::string> datesToRead = TimeUtil::getStringsForTmrwAnd14DaysBack();
-    std::vector<std::vector<std::string>> stringMatrix;
-
-    for (const auto& fileName : datesToRead)
+    if(dataBaseLoadStatus != SQLITE_OK)
     {
-        std::string properFileName = "../../HistoricData/Prices/" + fileName + ".csv";
-        std::string fileContent = Utility::readFromFile(properFileName);
-        std::stringstream outerStream(fileContent);
-        std::string parsedString;
-        while (getline(outerStream,parsedString,'\n'))
-        {
-            std::stringstream innerStream(parsedString);
-            std::string innerParsed;
-            std::vector<std::string> stringVector;
-            stringVector.push_back(fileName);
-            while (getline(innerStream,innerParsed,','))
-            {
-                stringVector.push_back(innerParsed);
-            }
-            stringMatrix.push_back(stringVector);
-        }
-    }
-
-    for (const auto& vector : stringMatrix)
-    {
-        std::string dateString = vector[0];
-        int hour = std::stoi(vector[1]);
-        int priceWithoutFees = std::stoi(vector[2]);
-        int fees = std::stoi(vector[3]);
-        if (datesMap_[dateString] == nullptr)
-        {
-            auto date = std::make_shared<Date>();
-            datesMap_[dateString] = date;
-        }
-        auto hourPrice = std::make_shared<HourPrice>(priceWithoutFees,fees);
-        datesMap_[dateString]->setPriceAtPoint(hour,hourPrice);
+        throw std::invalid_argument("Failed to open database");
     }
 }
 
-void ElPricesStorageController::storeDate(const std::string& dateKey, const std::shared_ptr<Date>& date)
+ElPricesStorageController::~ElPricesStorageController()
 {
-    datesMap_[dateKey] = date;
+    sqlite3_close(db_);
 }
 
-std::shared_ptr<Date> ElPricesStorageController::getDate(const std::string& dateKey)
+void ElPricesStorageController::insertHourPriceToDB(const std::string& dateStringWithHour, const std::shared_ptr<HourPrice>& hourPrice)
 {
-    std::lock_guard lockGuard(mutex_);
-    return datesMap_[dateKey];
+    char * errorMessage;
+    std::string sqlInsert = "INSERT INTO Prices(Raw,Fee,Time) VALUES (" + std::to_string(hourPrice->getPriceWithoutFees()) +  ", " + std::to_string(hourPrice->getFees()) + ",'" + dateStringWithHour + "');";
+    sqlite3_exec(db_, sqlInsert.c_str(), NULL, NULL, &errorMessage);
+    std::cout << errorMessage << std::endl;
+    free(errorMessage);
 }
 
 void ElPricesStorageController::handleParsedData(const std::string& parsedData)
 {
-    std::lock_guard lockGuard(mutex_);
     // Split by \n, then by "
     std::string parsedString;
     std::stringstream stringStream(parsedData);
@@ -127,18 +98,10 @@ void ElPricesStorageController::handleParsedData(const std::string& parsedData)
         int total = std::stoi(priceLine[3]);
         std::string dateString = priceLine[4];
         int hour = std::stoi(priceLine[5]);
+        dateString += "-" + std::to_string(hour);
         // TODO Take Cerius prices into account :(
         auto hourPrice = std::make_shared<HourPrice>(priceWithoutTransport,ceriusFees);
-        if (datesMap_[dateString] == nullptr)
-        {
-            auto date = std::make_shared<Date>();
-            datesMap_[dateString] = date;
-        }
-        if (datesMap_[dateString]->getPriceAtPoint(hour) == nullptr)
-        {
-            std::string savePrice = std::to_string(hour) + "," + std::to_string(priceWithoutTransport) + "," + std::to_string(ceriusFees) + "\n";
-            Utility::appendToFile("../../HistoricData/Prices/" + dateString + ".csv",savePrice);
-            datesMap_[dateString]->setPriceAtPoint(hour,hourPrice);
-        }
+
+        insertHourPriceToDB(dateString,hourPrice);
     }
 }

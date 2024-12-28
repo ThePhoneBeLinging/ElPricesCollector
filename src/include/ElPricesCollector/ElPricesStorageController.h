@@ -4,7 +4,7 @@
 
 #ifndef ELPRICESSTORAGECONTROLLER_H
 #define ELPRICESSTORAGECONTROLLER_H
-#include <unordered_map>
+#include <sqlite3.h>
 
 #include "PriceObjects/Date.h"
 
@@ -13,13 +13,11 @@ class ElPricesStorageController
 {
 public:
     ElPricesStorageController();
-    ~ElPricesStorageController() = default;
-    void storeDate(const std::string& dateKey, const std::shared_ptr<Date>& date);
-    std::shared_ptr<Date> getDate(const std::string& dateKey);
+    ~ElPricesStorageController();
+    void insertHourPriceToDB(const std::string& dateStringWithHour, const std::shared_ptr<HourPrice>& hourPrice);
     void handleParsedData(const std::string& parsedData);
 private:
-    std::mutex mutex_;
-    std::unordered_map<std::string,std::shared_ptr<Date>> datesMap_;
+    sqlite3* db_;
 };
 
 
