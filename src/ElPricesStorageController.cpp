@@ -12,31 +12,34 @@
 
 
 ElPricesStorageController::ElPricesStorageController() : db_(std::make_unique<SQLite::Database>("../../Resources/historicData.db", SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
-, memoryDB_(std::make_unique<SQLite::Database>(":memory",SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
+, memoryDB_(std::make_unique<SQLite::Database>(":memory:",SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
 {
-    memoryDB_->exec("DROP TABLE IF EXISTS Prices");
-    memoryDB_->exec("""CREATE TABLE \"Prices\" ("
-    "\"ID\"	INTEGER NOT NULL UNIQUE,"
-    "\"Raw\"	INTEGER NOT NULL,"
-    "\"Fee\"INTEGER NOT NULL,"
-    "\"Time\"	TEXT NOT NULL UNIQUE,"
-    "PRIMARY KEY(\"ID\" AUTOINCREMENT)"
-    ");"
-    );
+    std::string query = "SELECT sql FROM sqlite_master WHERE type='table' AND name='Prices';";
+
+    SQLite::Statement queryStmt(*db_, query);
+    if (queryStmt.executeStep()) {
+
+        std::string createTableSQL = queryStmt.getColumn(0).getString();
+        memoryDB_->exec(createTableSQL);
+    }
+
 }
 
-void ElPricesStorageController::insertHourPriceToDB(const std::string& dateStringWithHour, const std::shared_ptr<HourPrice>& hourPrice)
+void ElPricesStorageController::insertHourPriceToDB(const std::string& dateStringWithHour, int hour, const std::shared_ptr<HourPrice>& hourPrice)
 {
     try
     {
-        std::string sqlInsert = "INSERT OR IGNORE INTO Prices(Raw,Fee,Time) VALUES (" + std::to_string(hourPrice->getPriceWithoutFees()) +  ", " + std::to_string(hourPrice->getFees()) + ",'" + dateStringWithHour + "');";
-        memoryDB_->exec(sqlInsert);
+        SQLite::Statement sqlInsertStatement(*memoryDB_,"INSERT OR IGNORE INTO Prices(Raw,Fee,Date,Hour) VALUES (?,?,?,?);");
+        sqlInsertStatement.bind(1,hourPrice->getPriceWithoutFees());
+        sqlInsertStatement.bind(2,hourPrice->getFees());
+        sqlInsertStatement.bind(3,dateStringWithHour);
+        sqlInsertStatement.bind(4,hour);
+        sqlInsertStatement.exec();
     }
     catch (const std::exception& e)
     {
         std::cout << e.what() << std::endl;
     }
-    copyToFileDataBase();
 }
 
 void ElPricesStorageController::handleParsedData(const std::string& parsedData)
@@ -101,35 +104,36 @@ void ElPricesStorageController::handleParsedData(const std::string& parsedData)
         int total = std::stoi(priceLine[3]);
         std::string dateString = priceLine[4];
         int hour = std::stoi(priceLine[5]);
-        dateString += "-" + std::to_string(hour);
         // TODO Take Cerius prices into account :(
         auto hourPrice = std::make_shared<HourPrice>(priceWithoutTransport,ceriusFees);
 
-        insertHourPriceToDB(dateString,hourPrice);
+        insertHourPriceToDB(dateString, hour, hourPrice);
     }
+    copyToFileDataBase();
 }
 
 void ElPricesStorageController::copyToFileDataBase() const
 {
     try
     {
-
         // TODO Purge in memory DB, and keep only today and tmrw.
         // All purged data must be copied into the file DB first.
 
-        SQLite::Statement   selectionQuery(*memoryDB_, "SELECT * FROM Prices");
+        SQLite::Statement selectionQuery(*memoryDB_, "SELECT * FROM Prices");
 
         while (selectionQuery.executeStep())
         {
             int id = selectionQuery.getColumn(0).getInt();
             int priceWithoutFees = selectionQuery.getColumn(1).getInt();
             int fee = selectionQuery.getColumn(2).getInt();
-            std::string time = selectionQuery.getColumn(3).getString();
+            std::string dateString = selectionQuery.getColumn(3).getString();
+            int hour = selectionQuery.getColumn(4).getInt();
 
-            SQLite::Statement sqlInsertStatement(*db_,"INSERT OR IGNORE INTO Prices(Raw,Fee,Time) VALUES (?,?,?);");
+            SQLite::Statement sqlInsertStatement(*db_,"INSERT OR IGNORE INTO Prices(Raw,Fee,Date,Hour) VALUES (?,?,?,?);");
             sqlInsertStatement.bind(1,priceWithoutFees);
             sqlInsertStatement.bind(2,fee);
-            sqlInsertStatement.bind(3,time);
+            sqlInsertStatement.bind(3,dateString);
+            sqlInsertStatement.bind(4,hour);
             sqlInsertStatement.exec();
         }
     }
