@@ -109,13 +109,14 @@ void ElPricesStorageController::handleParsedData(const std::string& parsedData)
     }
 }
 
-void ElPricesStorageController::copyToFileDataBase()
+void ElPricesStorageController::copyToFileDataBase() const
 {
     try
     {
-        // TODO Update statement below to perhaps only attempt today.
-        // This will require the program to run, at least once, per day. But will save a lot of read/write.
-        // Before release, i should probably just keep the database in memory.
+
+        // TODO Purge in memory DB, and keep only today and tmrw.
+        // All purged data must be copied into the file DB first.
+
         SQLite::Statement   selectionQuery(*memoryDB_, "SELECT * FROM Prices");
 
         while (selectionQuery.executeStep())
