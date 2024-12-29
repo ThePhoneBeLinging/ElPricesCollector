@@ -11,13 +11,18 @@
 #include "Utility/Utility.h"
 
 
-ElPricesStorageController::ElPricesStorageController() : db_("../../Resources/historicData.db", SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE)
+ElPricesStorageController::ElPricesStorageController() : db_(std::make_unique<SQLite::Database>("../../Resources/historicData.db", SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
+, memoryDB_(std::make_unique<SQLite::Database>(":memory",SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
 {
-}
-
-ElPricesStorageController::~ElPricesStorageController()
-{
-    // TODO CLose DB;
+    memoryDB_->exec("DROP TABLE IF EXISTS Prices");
+    memoryDB_->exec("""CREATE TABLE \"Prices\" ("
+    "\"ID\"	INTEGER NOT NULL UNIQUE,"
+    "\"Raw\"	INTEGER NOT NULL,"
+    "\"Fee\"INTEGER NOT NULL,"
+    "\"Time\"	TEXT NOT NULL UNIQUE,"
+    "PRIMARY KEY(\"ID\" AUTOINCREMENT)"
+    ");"
+    );
 }
 
 void ElPricesStorageController::insertHourPriceToDB(const std::string& dateStringWithHour, const std::shared_ptr<HourPrice>& hourPrice)
@@ -25,13 +30,13 @@ void ElPricesStorageController::insertHourPriceToDB(const std::string& dateStrin
     try
     {
         std::string sqlInsert = "INSERT OR IGNORE INTO Prices(Raw,Fee,Time) VALUES (" + std::to_string(hourPrice->getPriceWithoutFees()) +  ", " + std::to_string(hourPrice->getFees()) + ",'" + dateStringWithHour + "');";
-        db_.exec(sqlInsert);
+        memoryDB_->exec(sqlInsert);
     }
     catch (const std::exception& e)
     {
         std::cout << e.what() << std::endl;
     }
-
+    copyToFileDataBase();
 }
 
 void ElPricesStorageController::handleParsedData(const std::string& parsedData)
@@ -84,7 +89,6 @@ void ElPricesStorageController::handleParsedData(const std::string& parsedData)
                 priceLine[5] = parsedDateStringLine;
                 innerFirst = false;
             }
-
         }
 
         std::erase(priceLine[1],',');
@@ -102,5 +106,34 @@ void ElPricesStorageController::handleParsedData(const std::string& parsedData)
         auto hourPrice = std::make_shared<HourPrice>(priceWithoutTransport,ceriusFees);
 
         insertHourPriceToDB(dateString,hourPrice);
+    }
+}
+
+void ElPricesStorageController::copyToFileDataBase()
+{
+    try
+    {
+        // TODO Update statement below to perhaps only attempt today.
+        // This will require the program to run, at least once, per day. But will save a lot of read/write.
+        // Before release, i should probably just keep the database in memory.
+        SQLite::Statement   selectionQuery(*memoryDB_, "SELECT * FROM Prices");
+
+        while (selectionQuery.executeStep())
+        {
+            int id = selectionQuery.getColumn(0).getInt();
+            int priceWithoutFees = selectionQuery.getColumn(1).getInt();
+            int fee = selectionQuery.getColumn(2).getInt();
+            std::string time = selectionQuery.getColumn(3).getString();
+
+            SQLite::Statement sqlInsertStatement(*db_,"INSERT OR IGNORE INTO Prices(Raw,Fee,Time) VALUES (?,?,?);");
+            sqlInsertStatement.bind(1,priceWithoutFees);
+            sqlInsertStatement.bind(2,fee);
+            sqlInsertStatement.bind(3,time);
+            sqlInsertStatement.exec();
+        }
+    }
+    catch (std::exception& e)
+    {
+        std::cout << e.what() << std::endl;
     }
 }

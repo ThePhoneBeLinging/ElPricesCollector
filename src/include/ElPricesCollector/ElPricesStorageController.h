@@ -14,11 +14,13 @@ class ElPricesStorageController
 {
 public:
     ElPricesStorageController();
-    ~ElPricesStorageController();
+    ~ElPricesStorageController() = default;
     void insertHourPriceToDB(const std::string& dateStringWithHour, const std::shared_ptr<HourPrice>& hourPrice);
     void handleParsedData(const std::string& parsedData);
+    void copyToFileDataBase();
 private:
-    SQLite::Database db_;
+    std::unique_ptr<SQLite::Database> db_;
+    std::unique_ptr<SQLite::Database> memoryDB_;
 };
 
 
