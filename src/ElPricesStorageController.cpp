@@ -11,15 +11,15 @@
 #include "Utility/Utility.h"
 
 
-ElPricesStorageController::ElPricesStorageController() : db_(std::make_unique<SQLite::Database>("../../Resources/historicData.db", SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
+ElPricesStorageController::ElPricesStorageController() : db_(std::make_unique<SQLite::Database>("../../HistoricData/Prices.db", SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
 , memoryDB_(std::make_unique<SQLite::Database>(":memory:",SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
 {
     // This part of the constructor creates a Table with the same specifications of the file-based DB
     std::string query = "SELECT sql FROM sqlite_master WHERE type='table' AND name='Prices';";
 
     SQLite::Statement queryStmt(*db_, query);
-    if (queryStmt.executeStep()) {
-
+    if (queryStmt.executeStep())
+    {
         std::string createTableSQL = queryStmt.getColumn(0).getString();
         memoryDB_->exec(createTableSQL);
     }
