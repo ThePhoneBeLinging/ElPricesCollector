@@ -4,9 +4,10 @@
 
 #ifndef ELPRICESSTORAGECONTROLLER_H
 #define ELPRICESSTORAGECONTROLLER_H
-#include <sqlite3.h>
 
 #include "PriceObjects/Date.h"
+#include "SQLiteCpp/Column.h"
+#include "SQLiteCpp/Database.h"
 
 
 class ElPricesStorageController
@@ -17,7 +18,7 @@ public:
     void insertHourPriceToDB(const std::string& dateStringWithHour, const std::shared_ptr<HourPrice>& hourPrice);
     void handleParsedData(const std::string& parsedData);
 private:
-    sqlite3* db_;
+    SQLite::Database db_;
 };
 
 
