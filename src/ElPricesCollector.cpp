@@ -27,7 +27,7 @@ std::shared_ptr<HourPrice> ElPricesCollector::getCurrentPrice()
     auto currentTime = TimeUtil::getCurrentTime();
     auto timeString = TimeUtil::timeToStringForLookup(currentTime);
 
-    return std::make_shared<HourPrice>(0,0);
+    return storageController_->getHourPriceFromMemoryDB(timeString,currentTime.tm_hour);
 }
 
 std::vector<std::shared_ptr<HourPrice>> ElPricesCollector::getPricesAroundCurrentTime()
@@ -45,8 +45,8 @@ std::vector<std::shared_ptr<HourPrice>> ElPricesCollector::getPricesAroundCurren
         tm forwardsTime = TimeUtil::timeToTM(forwardsTimePtr);
         std::string backwardsTimeString = TimeUtil::timeToStringForLookup(backwardsTime);
         std::string forwardsTimeString = TimeUtil::timeToStringForLookup(forwardsTime);
-        //backwardsPrices.push_back(storageController_->getDate(backwardsTimeString)->getPriceAtPoint(backwardsTime.tm_hour));
-        //forwardsPrices.push_back(storageController_->getDate(forwardsTimeString)->getPriceAtPoint(forwardsTime.tm_hour));
+        backwardsPrices.push_back(storageController_->getHourPriceFromMemoryDB(backwardsTimeString,backwardsTime.tm_hour));
+        forwardsPrices.push_back(storageController_->getHourPriceFromMemoryDB(forwardsTimeString, forwardsTime.tm_hour));
     }
     std::vector<std::shared_ptr<HourPrice>> currentPrices;
 

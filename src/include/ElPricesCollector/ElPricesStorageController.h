@@ -16,6 +16,7 @@ public:
     ElPricesStorageController();
     ~ElPricesStorageController() = default;
     void insertHourPriceToDB(const std::string& dateStringWithHour, int hour, const std::shared_ptr<HourPrice>& hourPrice);
+    std::shared_ptr<HourPrice> getHourPriceFromMemoryDB(const std::string& dateString, int hour) const;
     void handleParsedData(const std::string& parsedData);
     void copyToFileDataBase() const;
 private:

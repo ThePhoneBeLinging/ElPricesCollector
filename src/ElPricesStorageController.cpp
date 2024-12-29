@@ -14,6 +14,7 @@
 ElPricesStorageController::ElPricesStorageController() : db_(std::make_unique<SQLite::Database>("../../Resources/historicData.db", SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
 , memoryDB_(std::make_unique<SQLite::Database>(":memory:",SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
 {
+    // This part of the constructor creates a Table with the same specifications of the file-based DB
     std::string query = "SELECT sql FROM sqlite_master WHERE type='table' AND name='Prices';";
 
     SQLite::Statement queryStmt(*db_, query);
@@ -40,6 +41,30 @@ void ElPricesStorageController::insertHourPriceToDB(const std::string& dateStrin
     {
         std::cout << e.what() << std::endl;
     }
+}
+
+std::shared_ptr<HourPrice> ElPricesStorageController::getHourPriceFromMemoryDB(const std::string& dateString, int hour) const
+{
+    try
+    {
+        SQLite::Statement selectStatement(*memoryDB_, "SELECT * FROM Prices WHERE Date == ? AND Hour == ?");
+        selectStatement.bind(1,dateString);
+        selectStatement.bind(2,hour);
+
+        while (selectStatement.executeStep())
+        {
+            int id = selectStatement.getColumn(0).getInt();
+            int rawPrice = selectStatement.getColumn(1).getInt();
+            int fee = selectStatement.getColumn(2).getInt();
+
+            return std::make_shared<HourPrice>(rawPrice,fee);
+        }
+    }
+    catch (const std::exception& e)
+    {
+        std::cout << e.what() << std::endl;
+    }
+    return nullptr;
 }
 
 void ElPricesStorageController::handleParsedData(const std::string& parsedData)
