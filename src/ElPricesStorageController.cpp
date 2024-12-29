@@ -116,10 +116,12 @@ void ElPricesStorageController::copyToFileDataBase() const
 {
     try
     {
-        // TODO Purge in memory DB, and keep only today and tmrw.
-        // All purged data must be copied into the file DB first.
+        std::string todayLookupString = TimeUtil::getCurrentTimeAsDateString();
+        std::string tmrwLookupString = TimeUtil::timeToStringForLookup(TimeUtil::getTommorowTime());
 
-        SQLite::Statement selectionQuery(*memoryDB_, "SELECT * FROM Prices");
+        SQLite::Statement selectionQuery(*memoryDB_, "SELECT * FROM Prices WHERE Date != ? AND Date != ?");
+        selectionQuery.bind(1,todayLookupString);
+        selectionQuery.bind(2,tmrwLookupString);
 
         while (selectionQuery.executeStep())
         {
@@ -135,6 +137,10 @@ void ElPricesStorageController::copyToFileDataBase() const
             sqlInsertStatement.bind(3,dateString);
             sqlInsertStatement.bind(4,hour);
             sqlInsertStatement.exec();
+
+            SQLite::Statement memoryDeleteStatement(*memoryDB_,"DELETE FROM Prices WHERE Date == ?");
+            memoryDeleteStatement.bind(1,id);
+            memoryDeleteStatement.exec();
         }
     }
     catch (std::exception& e)
