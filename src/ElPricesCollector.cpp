@@ -13,6 +13,7 @@
 ElPricesCollector::ElPricesCollector() : keepRunningBool_(true), storageController_(std::make_shared<ElPricesStorageController>())
 {
     updatingThread_ = std::thread(&ElPricesCollector::keepUpdated,this);
+
 }
 
 ElPricesCollector::~ElPricesCollector()

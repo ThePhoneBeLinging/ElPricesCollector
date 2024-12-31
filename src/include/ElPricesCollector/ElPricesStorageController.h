@@ -6,7 +6,7 @@
 #define ELPRICESSTORAGECONTROLLER_H
 
 #include "PriceObjects/Date.h"
-#include "SQLiteCpp/Column.h"
+#include "../../FeeController.h"
 #include "SQLiteCpp/Database.h"
 
 
@@ -19,9 +19,11 @@ public:
     std::shared_ptr<HourPrice> getHourPriceFromMemoryDB(const std::string& dateString, int hour) const;
     void handleParsedData(const std::string& parsedData);
     void copyToFileDataBase() const;
+    void reloadFees();
 private:
     std::unique_ptr<SQLite::Database> db_;
     std::unique_ptr<SQLite::Database> memoryDB_;
+    std::unique_ptr<FeeController> feeController_;
 };
 
 
