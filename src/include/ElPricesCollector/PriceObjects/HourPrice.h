@@ -13,6 +13,7 @@ public:
     HourPrice(int priceWithoutFees, int fees);
     [[nodiscard]] int getPriceWithoutFees() const;
     [[nodiscard]] int getFees() const;
+    [[nodiscard]] int getTotalPrice() const;
 
 private:
     int priceWithoutFees_;

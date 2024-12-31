@@ -31,6 +31,16 @@ std::shared_ptr<HourPrice> ElPricesCollector::getCurrentPrice()
     return storageController_->getHourPriceFromMemoryDB(timeString,currentTime.tm_hour);
 }
 
+std::shared_ptr<HourPrice> ElPricesCollector::getPriceBasedOnSecondsAgo(int seconds)
+{
+    auto now = std::chrono::system_clock::now();
+    now -= std::chrono::seconds(seconds);
+    auto timeTM = TimeUtil::timeToTM(now);
+    auto timeString = TimeUtil::timeToStringForLookup(timeTM);
+
+    return storageController_->getHourPriceFromMemoryDB(timeString,timeTM.tm_hour);
+}
+
 
 void ElPricesCollector::keepUpdated()
 {

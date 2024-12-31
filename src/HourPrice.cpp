@@ -18,3 +18,8 @@ int HourPrice::getFees() const
 {
     return fees_;
 }
+
+int HourPrice::getTotalPrice() const
+{
+    return priceWithoutFees_ + fees_;
+}
