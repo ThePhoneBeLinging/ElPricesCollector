@@ -62,6 +62,6 @@ void ElPricesCollector::keepUpdated()
         std::cout << r.text << std::endl;
         storageController_->handleParsedData(r.text);
         int secondsToWait = ConfigController::getConfigInt("ElPricesCollectorUsualSecondsDelay");
-        conditionVariable_.wait_for(lock, std::chrono::hours(secondsToWait));
+        conditionVariable_.wait_for(lock, std::chrono::seconds(secondsToWait));
     }
 }
