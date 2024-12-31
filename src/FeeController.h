@@ -15,7 +15,7 @@ public:
     FeeController();
     ~FeeController() = default;
     [[nodiscard]] int getCurrentFees();
-    [[nodiscar]] int getFeesFromDate(int month, int hour);
+    [[nodiscard]] int getFeesFromDate(int month, int hour);
     void loadFeesFromFile();
 
 private:
