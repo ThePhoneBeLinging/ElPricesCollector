@@ -18,6 +18,12 @@ add_library(ElPricesCollector STATIC
         ElPricesStorageController.cpp
         HourPrice.cpp
         Date.cpp
+        FeeController.cpp
+        FeeController.h
+        CeriusFees/Fee.cpp
+        CeriusFees/Fee.h
+        CeriusFees/Fee.cpp
+        CeriusFees/Fee.h
 )
 
 target_include_directories(ElPricesCollector PUBLIC include)
