@@ -14,7 +14,10 @@ class FeeController
 public:
     FeeController();
     ~FeeController() = default;
-    [[nodiscard]] int getCurrentFees() const;
+    [[nodiscard]] int getCurrentFees();
+    [[nodiscar]] int getFeesFromDate(int month, int hour);
+    void loadFeesFromFile();
+
 private:
     std::mutex mutex_;
     std::set<int> monthsWithSummerFees_;

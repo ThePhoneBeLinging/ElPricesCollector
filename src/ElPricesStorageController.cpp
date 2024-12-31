@@ -13,6 +13,7 @@
 
 ElPricesStorageController::ElPricesStorageController() : db_(std::make_unique<SQLite::Database>("../../HistoricData/Prices.db", SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
 , memoryDB_(std::make_unique<SQLite::Database>(":memory:",SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
+, feeController_(std::make_unique<FeeController>())
 {
     std::cout << "ElPricesStorageController::ElPricesStorageController()" << std::endl;
     // This part of the constructor creates a Table with the same specifications of the file-based DB
@@ -24,7 +25,7 @@ ElPricesStorageController::ElPricesStorageController() : db_(std::make_unique<SQ
         std::string createTableSQL = queryStmt.getColumn(0).getString();
         memoryDB_->exec(createTableSQL);
     }
-
+    feeController_->loadFeesFromFile();
 }
 
 void ElPricesStorageController::insertHourPriceToDB(const std::string& dateStringWithHour, int hour, const std::shared_ptr<HourPrice>& hourPrice)
@@ -126,11 +127,23 @@ void ElPricesStorageController::handleParsedData(const std::string& parsedData)
 
         int priceWithoutTransport = std::stoi(priceLine[1]);
         int currentPriceOfTransport = std::stoi(priceLine[2]);
-        int ceriusFees = 0;
         int total = std::stoi(priceLine[3]);
         std::string dateString = priceLine[4];
+        std::string monthString;
+        std::stringstream monthStream(dateString);
+        int index = 0;
+        while (getline(monthStream,monthString,'.'))
+        {
+            if (index == 1)
+            {
+                break;
+            }
+            index++;
+        }
+        int month = std::stoi(monthString);
         int hour = std::stoi(priceLine[5]);
         // TODO Take Cerius prices into account :(
+        int ceriusFees = feeController_->getFeesFromDate(month,hour);
         auto hourPrice = std::make_shared<HourPrice>(priceWithoutTransport,ceriusFees);
 
         insertHourPriceToDB(dateString, hour, hourPrice);
@@ -173,4 +186,9 @@ void ElPricesStorageController::copyToFileDataBase() const
     {
         std::cout << e.what() << std::endl;
     }
+}
+
+void ElPricesStorageController::reloadFees()
+{
+    feeController_->loadFeesFromFile();
 }
