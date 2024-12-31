@@ -125,7 +125,7 @@ void ElPricesStorageController::handleParsedData(const std::string& parsedData)
         std::erase(priceLine[2],',');
         std::erase(priceLine[3],',');
 
-        int priceWithoutTransport = std::stoi(priceLine[1]);
+        int priceWithoutTransport = std::stoi(priceLine[1]) * 100;
         int currentPriceOfTransport = std::stoi(priceLine[2]);
         int total = std::stoi(priceLine[3]);
         std::string dateString = priceLine[4];
