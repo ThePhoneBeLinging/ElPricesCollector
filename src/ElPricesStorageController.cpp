@@ -177,7 +177,7 @@ void ElPricesStorageController::copyToFileDataBase() const
             sqlInsertStatement.bind(4,hour);
             sqlInsertStatement.exec();
 
-            SQLite::Statement memoryDeleteStatement(*memoryDB_,"DELETE FROM Prices WHERE Date == ?");
+            SQLite::Statement memoryDeleteStatement(*memoryDB_,"DELETE FROM Prices WHERE ID == ?");
             memoryDeleteStatement.bind(1,id);
             memoryDeleteStatement.exec();
         }
