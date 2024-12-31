@@ -9,6 +9,7 @@
 #include "Utility/TimeUtil.h"
 #include "cpr/response.h"
 #include "cpr/api.h"
+#include "Utility/ConfigController.h"
 
 ElPricesCollector::ElPricesCollector() : keepRunningBool_(true), storageController_(std::make_shared<ElPricesStorageController>())
 {
@@ -60,7 +61,7 @@ void ElPricesCollector::keepUpdated()
         }
         std::cout << r.text << std::endl;
         storageController_->handleParsedData(r.text);
-
-        conditionVariable_.wait_for(lock, std::chrono::hours(1));
+        int secondsToWait = std::stoi(ConfigController::getConfig("ElPricesCollectorUsualSecondsDelay"));
+        conditionVariable_.wait_for(lock, std::chrono::hours(secondsToWait));
     }
 }
