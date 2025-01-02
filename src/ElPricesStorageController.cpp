@@ -66,7 +66,7 @@ std::shared_ptr<HourPrice> ElPricesStorageController::getHourPriceFromMemoryDB(c
     {
         std::cout << e.what() << std::endl;
     }
-    return nullptr;
+    throw std::runtime_error("Select * FROM Prices WHERE Date == " + dateString + " AND Hour == " + std::to_string(hour) + " returned no results...");
 }
 
 void ElPricesStorageController::handleParsedData(const std::string& parsedData)
