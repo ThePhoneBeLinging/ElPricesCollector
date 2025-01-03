@@ -61,7 +61,6 @@ void ElPricesCollector::keepUpdated()
         {
             throw std::invalid_argument("Status code was not 200, it was: " + std::to_string(r.status_code));
         }
-        std::cout << r.text << std::endl;
         storageController_->handleParsedData(r.text);
         constructorReadyForCompletion_ = true;
         int secondsToWait = ConfigController::getConfigInt("ElPricesCollectorUsualSecondsDelay");
