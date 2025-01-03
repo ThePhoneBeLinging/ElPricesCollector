@@ -12,9 +12,11 @@
 #include "Utility/ConfigController.h"
 
 ElPricesCollector::ElPricesCollector() : keepRunningBool_(true), storageController_(std::make_shared<ElPricesStorageController>())
+, constructorReadyForCompletion_(false)
 {
     updatingThread_ = std::thread(&ElPricesCollector::keepUpdated,this);
-
+    while (not constructorReadyForCompletion_)
+    {}
 }
 
 ElPricesCollector::~ElPricesCollector()
@@ -61,6 +63,7 @@ void ElPricesCollector::keepUpdated()
         }
         std::cout << r.text << std::endl;
         storageController_->handleParsedData(r.text);
+        constructorReadyForCompletion_ = true;
         int secondsToWait = ConfigController::getConfigInt("ElPricesCollectorUsualSecondsDelay");
         conditionVariable_.wait_for(lock, std::chrono::seconds(secondsToWait));
     }

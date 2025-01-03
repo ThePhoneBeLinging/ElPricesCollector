@@ -24,6 +24,7 @@ public:
 private:
     void keepUpdated();
     std::atomic<bool> keepRunningBool_;
+    std::atomic_bool constructorReadyForCompletion_;
     std::thread updatingThread_;
     std::condition_variable conditionVariable_;
     std::shared_ptr<ElPricesStorageController> storageController_;
