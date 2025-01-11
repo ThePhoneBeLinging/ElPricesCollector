@@ -4,8 +4,6 @@
 
 #include "include/ElPricesCollector/ElPricesCollector.h"
 
-#include <iostream>
-
 #include "Utility/TimeUtil.h"
 #include "cpr/response.h"
 #include "cpr/api.h"
@@ -16,7 +14,9 @@ ElPricesCollector::ElPricesCollector() : keepRunningBool_(true), storageControll
 {
     updatingThread_ = std::thread(&ElPricesCollector::keepUpdated,this);
     while (not constructorReadyForCompletion_)
-    {}
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
 }
 
 ElPricesCollector::~ElPricesCollector()
