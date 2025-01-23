@@ -92,23 +92,25 @@ std::vector<std::shared_ptr<HourPrice>> ElPricesStorageController::getCurrentAnd
             int hour = selectStatement.getColumn(4).getInt();
 
             auto price = std::make_shared<HourPrice>(rawPrice,fee);
-            int multiplier = 1;
+            int multiplier = 0;
             if (date == tmrwDateString)
             {
-                multiplier = 2;
+                multiplier = 1;
             }
-            hourPrices[hour * multiplier] = price;
+            hourPrices[hour + (multiplier * 24)] = price;
         }
         std::vector<std::shared_ptr<HourPrice>> finalHourPrices;
         int hourToLookFor = currentTime.tm_hour;
+        bool firstValidHourFound = false;
         for (int i = 0; i < 48; i++)
         {
             if (hourPrices[i] != nullptr)
             {
-                if (i < currentTime.tm_hour)
+                if (not firstValidHourFound && i < currentTime.tm_hour)
                 {
                     continue;
                 }
+                firstValidHourFound = true;
                 finalHourPrices.push_back(hourPrices[i]);
             }
         }
