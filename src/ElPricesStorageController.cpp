@@ -66,7 +66,59 @@ std::shared_ptr<HourPrice> ElPricesStorageController::getHourPriceFromMemoryDB(c
     {
         std::cout << e.what() << std::endl;
     }
-    throw std::runtime_error("Select * FROM Prices WHERE Date == " + dateString + " AND Hour == " + std::to_string(hour) + " returned no results...");
+    return std::make_shared<HourPrice>(0,0);
+}
+
+std::vector<std::shared_ptr<HourPrice>> ElPricesStorageController::getCurrentAndFuturePrices()
+{
+    try
+    {
+        auto dateString = TimeUtil::timeToStringForLookup(TimeUtil::getCurrentTime());
+        auto tmrwDateString = TimeUtil::timeToStringForLookup(TimeUtil::getTommorowTime());
+        auto currentTime = TimeUtil::getCurrentTime();
+        std::vector<std::shared_ptr<HourPrice>> hourPrices;
+        hourPrices.resize(48);
+
+        SQLite::Statement selectStatement(*memoryDB_, "SELECT * FROM Prices WHERE Date == ? OR Date == ?");
+        selectStatement.bind(1,dateString);
+        selectStatement.bind(2,tmrwDateString);
+
+        while (selectStatement.executeStep())
+        {
+            int id = selectStatement.getColumn(0).getInt();
+            int rawPrice = selectStatement.getColumn(1).getInt();
+            int fee = selectStatement.getColumn(2).getInt();
+            std::string date = selectStatement.getColumn(3).getString();
+            int hour = selectStatement.getColumn(4).getInt();
+
+            auto price = std::make_shared<HourPrice>(rawPrice,fee);
+            int multiplier = 1;
+            if (date == tmrwDateString)
+            {
+                multiplier = 2;
+            }
+            hourPrices[hour * multiplier] = price;
+        }
+        std::vector<std::shared_ptr<HourPrice>> finalHourPrices;
+        int hourToLookFor = currentTime.tm_hour;
+        for (int i = 0; i < 48; i++)
+        {
+            if (hourPrices[i] != nullptr)
+            {
+                if (i < currentTime.tm_hour)
+                {
+                    continue;
+                }
+                finalHourPrices.push_back(hourPrices[i]);
+            }
+        }
+        return finalHourPrices;
+    }
+    catch (const std::exception& e)
+    {
+        std::cout << e.what() << std::endl;
+    }
+    return std::vector<std::shared_ptr<HourPrice>>();
 }
 
 void ElPricesStorageController::handleParsedData(const std::string& parsedData)

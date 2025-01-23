@@ -20,6 +20,7 @@ public:
 
     std::shared_ptr<HourPrice> getCurrentPrice();
     std::shared_ptr<HourPrice> getPriceBasedOnSecondsAgo(int seconds);
+    std::vector<std::shared_ptr<HourPrice>> getCurrentAndFuturePrices();
 
 private:
     void keepUpdated();

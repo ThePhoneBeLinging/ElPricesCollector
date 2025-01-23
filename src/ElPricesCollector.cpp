@@ -44,6 +44,11 @@ std::shared_ptr<HourPrice> ElPricesCollector::getPriceBasedOnSecondsAgo(int seco
     return storageController_->getHourPriceFromMemoryDB(timeString,timeTM.tm_hour);
 }
 
+std::vector<std::shared_ptr<HourPrice>> ElPricesCollector::getCurrentAndFuturePrices()
+{
+    return storageController_->getCurrentAndFuturePrices();
+}
+
 
 void ElPricesCollector::keepUpdated()
 {
