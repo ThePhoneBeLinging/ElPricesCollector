@@ -12,10 +12,11 @@
 ElPricesCollector::ElPricesCollector() : keepRunningBool_(true), storageController_(std::make_shared<ElPricesStorageController>())
 , constructorReadyForCompletion_(false)
 {
+    storageController_->initMemoryDBFromFile();
     updatingThread_ = std::thread(&ElPricesCollector::keepUpdated,this);
     while (not constructorReadyForCompletion_)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 }
 

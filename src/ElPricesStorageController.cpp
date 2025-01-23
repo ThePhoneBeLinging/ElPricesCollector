@@ -120,7 +120,7 @@ std::vector<std::shared_ptr<HourPrice>> ElPricesStorageController::getCurrentAnd
     {
         std::cout << e.what() << std::endl;
     }
-    return std::vector<std::shared_ptr<HourPrice>>();
+    return {};
 }
 
 void ElPricesStorageController::handleParsedData(const std::string& parsedData)
@@ -212,7 +212,7 @@ void ElPricesStorageController::copyToFileDataBase() const
         std::string todayLookupString = TimeUtil::getCurrentTimeAsDateString();
         std::string tmrwLookupString = TimeUtil::timeToStringForLookup(TimeUtil::getTommorowTime());
 
-        SQLite::Statement selectionQuery(*memoryDB_, "SELECT * FROM Prices WHERE Date != ? AND Date != ?");
+        SQLite::Statement selectionQuery(*memoryDB_, "SELECT * FROM Prices");
         selectionQuery.bind(1,todayLookupString);
         selectionQuery.bind(2,tmrwLookupString);
 
@@ -230,10 +230,45 @@ void ElPricesStorageController::copyToFileDataBase() const
             sqlInsertStatement.bind(3,dateString);
             sqlInsertStatement.bind(4,hour);
             sqlInsertStatement.exec();
+        }
 
-            SQLite::Statement memoryDeleteStatement(*memoryDB_,"DELETE FROM Prices WHERE ID == ?");
-            memoryDeleteStatement.bind(1,id);
-            memoryDeleteStatement.exec();
+        SQLite::Statement deleteStatement(*memoryDB_,"DELETE FROM Prices WHERE Date != ? AND Date != ?");
+        deleteStatement.bind(1,todayLookupString);
+        deleteStatement.bind(2,tmrwLookupString);
+        deleteStatement.exec();
+
+    }
+    catch (std::exception& e)
+    {
+        std::cout << e.what() << std::endl;
+    }
+}
+
+void ElPricesStorageController::initMemoryDBFromFile() const
+{
+    try
+    {
+        std::string todayLookupString = TimeUtil::getCurrentTimeAsDateString();
+        std::string tmrwLookupString = TimeUtil::timeToStringForLookup(TimeUtil::getTommorowTime());
+
+        SQLite::Statement selectionQuery(*db_, "SELECT * FROM Prices WHERE Date == ? OR Date == ?");
+        selectionQuery.bind(1,todayLookupString);
+        selectionQuery.bind(2,tmrwLookupString);
+
+        while (selectionQuery.executeStep())
+        {
+            int id = selectionQuery.getColumn(0).getInt();
+            int priceWithoutFees = selectionQuery.getColumn(1).getInt();
+            int fee = selectionQuery.getColumn(2).getInt();
+            std::string dateString = selectionQuery.getColumn(3).getString();
+            int hour = selectionQuery.getColumn(4).getInt();
+
+            SQLite::Statement sqlInsertStatement(*memoryDB_,"INSERT OR IGNORE INTO Prices(Raw,Fee,Date,Hour) VALUES (?,?,?,?);");
+            sqlInsertStatement.bind(1,priceWithoutFees);
+            sqlInsertStatement.bind(2,fee);
+            sqlInsertStatement.bind(3,dateString);
+            sqlInsertStatement.bind(4,hour);
+            sqlInsertStatement.exec();
         }
     }
     catch (std::exception& e)

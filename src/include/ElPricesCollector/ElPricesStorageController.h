@@ -20,6 +20,7 @@ public:
     std::vector<std::shared_ptr<HourPrice>> getCurrentAndFuturePrices();
     void handleParsedData(const std::string& parsedData);
     void copyToFileDataBase() const;
+    void initMemoryDBFromFile() const;
     void reloadFees();
 private:
     std::unique_ptr<SQLite::Database> db_;
