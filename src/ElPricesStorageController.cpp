@@ -41,7 +41,7 @@ void ElPricesStorageController::insertHourPriceToDB(const std::string& dateStrin
     }
     catch (const std::exception& e)
     {
-        std::cout << e.what() << std::endl;
+        std::cout << "InsertHourPriceToDB " << e.what() << std::endl;
     }
 }
 
@@ -64,7 +64,7 @@ std::shared_ptr<HourPrice> ElPricesStorageController::getHourPriceFromMemoryDB(c
     }
     catch (const std::exception& e)
     {
-        std::cout << e.what() << std::endl;
+        std::cout << "GetHourPriceFromMemoryDB " << e.what() << std::endl;
     }
     return std::make_shared<HourPrice>(0,0);
 }
@@ -118,7 +118,7 @@ std::vector<std::shared_ptr<HourPrice>> ElPricesStorageController::getCurrentAnd
     }
     catch (const std::exception& e)
     {
-        std::cout << e.what() << std::endl;
+        std::cout << "GetCurrentAndFuturePrices: " << e.what() << std::endl;
     }
     return {};
 }
@@ -213,8 +213,6 @@ void ElPricesStorageController::copyToFileDataBase() const
         std::string tmrwLookupString = TimeUtil::timeToStringForLookup(TimeUtil::getTommorowTime());
 
         SQLite::Statement selectionQuery(*memoryDB_, "SELECT * FROM Prices");
-        selectionQuery.bind(1,todayLookupString);
-        selectionQuery.bind(2,tmrwLookupString);
 
         while (selectionQuery.executeStep())
         {
@@ -224,7 +222,7 @@ void ElPricesStorageController::copyToFileDataBase() const
             std::string dateString = selectionQuery.getColumn(3).getString();
             int hour = selectionQuery.getColumn(4).getInt();
 
-            SQLite::Statement sqlInsertStatement(*db_,"INSERT OR IGNORE INTO Prices(Raw,Fee,Date,Hour) VALUES (?,?,?,?);");
+            SQLite::Statement sqlInsertStatement(*db_,"INSERT INTO Prices(Raw,Fee,Date,Hour) VALUES (?,?,?,?);");
             sqlInsertStatement.bind(1,priceWithoutFees);
             sqlInsertStatement.bind(2,fee);
             sqlInsertStatement.bind(3,dateString);
@@ -240,7 +238,7 @@ void ElPricesStorageController::copyToFileDataBase() const
     }
     catch (std::exception& e)
     {
-        std::cout << e.what() << std::endl;
+        std::cout << "CopyToFileDataBase: " << e.what() << std::endl;
     }
 }
 
