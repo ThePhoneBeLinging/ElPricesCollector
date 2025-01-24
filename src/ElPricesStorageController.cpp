@@ -222,7 +222,7 @@ void ElPricesStorageController::copyToFileDataBase() const
             std::string dateString = selectionQuery.getColumn(3).getString();
             int hour = selectionQuery.getColumn(4).getInt();
 
-            SQLite::Statement sqlInsertStatement(*db_,"INSERT INTO Prices(Raw,Fee,Date,Hour) VALUES (?,?,?,?);");
+            SQLite::Statement sqlInsertStatement(*db_,"INSERT OR IGNORE INTO Prices(Raw,Fee,Date,Hour) VALUES (?,?,?,?);");
             sqlInsertStatement.bind(1,priceWithoutFees);
             sqlInsertStatement.bind(2,fee);
             sqlInsertStatement.bind(3,dateString);

@@ -4,6 +4,8 @@
 
 #include "include/ElPricesCollector/ElPricesCollector.h"
 
+#include <iostream>
+
 #include "Utility/TimeUtil.h"
 #include "cpr/response.h"
 #include "cpr/api.h"
@@ -65,7 +67,7 @@ void ElPricesCollector::keepUpdated()
         cpr::Response r = cpr::Get(cpr::Url{"https://andelenergi.dk/?obexport_format=csv&obexport_start=" + currentTimeAPIString + "&obexport_end=" + tmrwTimeString + "&obexport_region=east&obexport_tax=0&obexport_product_id=1%231%23TIMEENERGI"});
         if (r.status_code != 200)
         {
-            throw std::invalid_argument("Status code was not 200, it was: " + std::to_string(r.status_code));
+            std::cout << "Status code was not 200, it was: " + std::to_string(r.status_code) << std::endl;
         }
         storageController_->handleParsedData(r.text);
         constructorReadyForCompletion_ = true;
