@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "Utility/ConfigController.h"
 #include "Utility/TimeUtil.h"
 #include "Utility/Utility.h"
 
@@ -196,9 +197,17 @@ void ElPricesStorageController::handleParsedData(const std::string& parsedData)
         }
         int month = std::stoi(monthString);
         int hour = std::stoi(priceLine[5]);
-        // TODO Take Cerius prices into account :(
         int ceriusFees = feeController_->getFeesFromDate(month,hour);
-        auto hourPrice = std::make_shared<HourPrice>(priceWithoutTransport,ceriusFees);
+        std::shared_ptr<HourPrice> hourPrice;
+        if (ConfigController::getConfigBool("UseRadiusToCeriusPriceDifference"))
+        {
+            int currentFees = currentPriceOfTransport + ConfigController::getConfigInt("RadiusToCerius_Hour:" + hour);
+            hourPrice = std::make_shared<HourPrice>(priceWithoutTransport,currentFees);
+        }
+        else
+        {
+            hourPrice = std::make_shared<HourPrice>(priceWithoutTransport,ceriusFees);
+        }
 
         insertHourPriceToDB(dateString, hour, hourPrice);
     }
