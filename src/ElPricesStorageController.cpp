@@ -203,6 +203,7 @@ void ElPricesStorageController::handleParsedData(const std::string& parsedData)
         {
             std::string keyForFeeLookup = "RadiusToCerius_Hour:" + std::to_string(hour);
             int currentFees = currentPriceOfTransport + ConfigController::getConfigInt(keyForFeeLookup);
+            currentFees *= 100;
             hourPrice = std::make_shared<HourPrice>(priceWithoutTransport,currentFees);
         }
         else
