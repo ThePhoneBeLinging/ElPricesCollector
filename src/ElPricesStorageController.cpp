@@ -8,6 +8,7 @@
 #include <sstream>
 
 #include "Utility/ConfigController.h"
+#include "Utility/DebugController.h"
 #include "Utility/TimeUtil.h"
 #include "Utility/Utility.h"
 
@@ -42,7 +43,8 @@ void ElPricesStorageController::insertHourPriceToDB(const std::string& dateStrin
     }
     catch (const std::exception& e)
     {
-        std::cout << "InsertHourPriceToDB " << e.what() << std::endl;
+        std::string debugText = e.what();
+        DebugController::debugWrite("Error occured in: InsertHourPriceToDB " + debugText);
     }
 }
 
