@@ -10,9 +10,10 @@
 #include "cpr/response.h"
 #include "cpr/api.h"
 #include "Utility/ConfigController.h"
+#include "Utility/DebugController.h"
 
 ElPricesCollector::ElPricesCollector() : keepRunningBool_(true), storageController_(std::make_shared<ElPricesStorageController>())
-, constructorReadyForCompletion_(false)
+                                         , constructorReadyForCompletion_(false)
 {
     storageController_->initMemoryDBFromFile();
     updatingThread_ = std::thread(&ElPricesCollector::keepUpdated,this);
@@ -67,7 +68,7 @@ void ElPricesCollector::keepUpdated()
         cpr::Response r = cpr::Get(cpr::Url{"https://andelenergi.dk/?obexport_format=csv&obexport_start=" + currentTimeAPIString + "&obexport_end=" + currentTimeAPIString + "&obexport_region=east&obexport_tax=0&obexport_product_id=1%231%23TIMEENERGI"});
         if (r.status_code != 200)
         {
-            std::cout << "Status code was not 200, it was: " + std::to_string(r.status_code) << std::endl;
+            DebugController::debugWrite("Status code was not 200, it was: " + std::to_string(r.status_code));
         }
         storageController_->handleParsedData(r.text);
         constructorReadyForCompletion_ = true;

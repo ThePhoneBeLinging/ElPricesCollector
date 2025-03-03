@@ -121,7 +121,8 @@ std::vector<std::shared_ptr<HourPrice>> ElPricesStorageController::getCurrentAnd
     }
     catch (const std::exception& e)
     {
-        std::cout << "GetCurrentAndFuturePrices: " << e.what() << std::endl;
+        std::string debugText = e.what();
+        DebugController::debugWrite("GetCurrentAndFuturePrices: " + debugText);
     }
     return {};
 }
@@ -251,7 +252,8 @@ void ElPricesStorageController::copyToFileDataBase() const
     }
     catch (std::exception& e)
     {
-        std::cout << "CopyToFileDataBase: " << e.what() << std::endl;
+        std::string debugText = e.what();
+        DebugController::debugWrite("CopyToFileDataBase(): " + debugText);
     }
 }
 
@@ -284,7 +286,8 @@ void ElPricesStorageController::initMemoryDBFromFile() const
     }
     catch (std::exception& e)
     {
-        std::cout << e.what() << std::endl;
+        std::string debugText = e.what();
+        DebugController::debugWrite("InitMemoryDBFromFile(): " + debugText);
     }
 }
 
