@@ -105,22 +105,7 @@ std::vector<std::shared_ptr<HourPrice>> ElPricesStorageController::getCurrentAnd
             }
             hourPrices[hour + (multiplier * 24)] = price;
         }
-        std::vector<std::shared_ptr<HourPrice>> finalHourPrices;
-        int hourToLookFor = currentTime.tm_hour;
-        bool firstValidHourFound = false;
-        for (int i = 0; i < 48; i++)
-        {
-            if (hourPrices[i] != nullptr)
-            {
-                if (not firstValidHourFound && i < currentTime.tm_hour)
-                {
-                    continue;
-                }
-                firstValidHourFound = true;
-                finalHourPrices.push_back(hourPrices[i]);
-            }
-        }
-        return finalHourPrices;
+        return hourPrices;
     }
     catch (const std::exception& e)
     {
