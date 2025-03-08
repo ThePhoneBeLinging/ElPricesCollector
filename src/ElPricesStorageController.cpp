@@ -6,18 +6,21 @@
 
 #include <iostream>
 #include <sstream>
-
+#include "DatabaseAccessController/DatabaseAccessController.h"
 #include "Utility/ConfigController.h"
 #include "Utility/DebugController.h"
 #include "Utility/TimeUtil.h"
 #include "Utility/Utility.h"
 
 
-ElPricesStorageController::ElPricesStorageController() : db_(std::make_unique<SQLite::Database>("../../HistoricData/Prices.db", SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
+ElPricesStorageController::ElPricesStorageController() : db_(std::make_shared<SQLite::Database>("../../HistoricData/Prices.db", SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
 , memoryDB_(std::make_unique<SQLite::Database>(":memory:",SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
 , feeController_(std::make_unique<FeeController>())
 {
     std::cout << "ElPricesStorageController::ElPricesStorageController()" << std::endl;
+
+    DatabaseAccessController::addDatabase(db_,"PRICEDB");
+
     // This part of the constructor creates a Table with the same specifications of the file-based DB
     std::string query = "SELECT sql FROM sqlite_master WHERE type='table' AND name='Prices';";
 
@@ -221,6 +224,7 @@ void ElPricesStorageController::handleParsedData(const std::string& parsedData)
 
 void ElPricesStorageController::copyToFileDataBase() const
 {
+    int lockKey = DatabaseAccessController::lockDatabase("PRICEDB");
     try
     {
         std::string todayLookupString = TimeUtil::getCurrentTimeAsDateString();
@@ -255,12 +259,15 @@ void ElPricesStorageController::copyToFileDataBase() const
         std::string debugText = e.what();
         DebugController::debugWrite("CopyToFileDataBase(): " + debugText);
     }
+    DatabaseAccessController::unlockDatabase("PRICEDB", lockKey);
 }
 
 void ElPricesStorageController::initMemoryDBFromFile() const
 {
+    int lockKey = DatabaseAccessController::lockDatabase("PRICEDB");
     try
     {
+
         std::string todayLookupString = TimeUtil::getCurrentTimeAsDateString();
         std::string tmrwLookupString = TimeUtil::timeToStringForLookup(TimeUtil::getTommorowTime());
 
@@ -289,6 +296,7 @@ void ElPricesStorageController::initMemoryDBFromFile() const
         std::string debugText = e.what();
         DebugController::debugWrite("InitMemoryDBFromFile(): " + debugText);
     }
+    DatabaseAccessController::unlockDatabase("PRICEDB", lockKey);
 }
 
 void ElPricesStorageController::reloadFees()

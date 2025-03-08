@@ -23,7 +23,7 @@ public:
     void initMemoryDBFromFile() const;
     void reloadFees();
 private:
-    std::unique_ptr<SQLite::Database> db_;
+    std::shared_ptr<SQLite::Database> db_;
     std::unique_ptr<SQLite::Database> memoryDB_;
     std::unique_ptr<FeeController> feeController_;
 };
