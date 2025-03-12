@@ -61,11 +61,19 @@ void ElPricesCollector::keepUpdated()
     while (keepRunningBool_)
     {
         auto currentTime = TimeUtil::getCurrentTime();
+        auto firstDayInWeek = std::chrono::system_clock::now() - std::chrono::days(currentTime.tm_wday);
+        auto firstDayTime = TimeUtil::timeToTM(firstDayInWeek);
+        auto firstDayInWeekString = TimeUtil::timeToStringForAPI(firstDayTime);
+
+        auto lastDayInWeek = std::chrono::system_clock::now() + std::chrono::days(6 - currentTime.tm_wday);
+        auto lastDayTime = TimeUtil::timeToTM(lastDayInWeek);
+        auto lastDayInWeekString = TimeUtil::timeToStringForAPI(lastDayTime);
+
         std::string currentTimeLookupString = TimeUtil::timeToStringForLookup(currentTime);
         std::string currentTimeAPIString = TimeUtil::timeToStringForAPI(currentTime);
         auto tmrwTime = TimeUtil::getTommorowTime();
         std::string tmrwTimeString = TimeUtil::timeToStringForAPI(tmrwTime);
-        cpr::Response r = cpr::Get(cpr::Url{"https://andelenergi.dk/?obexport_format=csv&obexport_start=" + currentTimeAPIString + "&obexport_end=" + currentTimeAPIString + "&obexport_region=east&obexport_tax=0&obexport_product_id=1%231%23TIMEENERGI"});
+        cpr::Response r = cpr::Get(cpr::Url{"https://andelenergi.dk/?obexport_format=csv&obexport_start=" + firstDayInWeekString + "&obexport_end=" + lastDayInWeekString + "&obexport_region=east&obexport_tax=0&obexport_product_id=1%231%23TIMEENERGI"});
         if (r.status_code != 200)
         {
             DebugController::debugWrite("Status code was not 200, it was: " + std::to_string(r.status_code));
