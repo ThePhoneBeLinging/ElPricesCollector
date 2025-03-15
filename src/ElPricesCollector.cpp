@@ -61,11 +61,11 @@ void ElPricesCollector::keepUpdated()
     while (keepRunningBool_)
     {
         auto currentTime = TimeUtil::getCurrentTime();
-        auto firstDayInWeek = std::chrono::system_clock::now() - std::chrono::days(currentTime.tm_wday);
+        auto firstDayInWeek = std::chrono::system_clock::now() - std::chrono::days(4);
         auto firstDayTime = TimeUtil::timeToTM(firstDayInWeek);
         auto firstDayInWeekString = TimeUtil::timeToStringForAPI(firstDayTime);
 
-        auto lastDayInWeek = std::chrono::system_clock::now() + std::chrono::days(7 - currentTime.tm_wday);
+        auto lastDayInWeek = std::chrono::system_clock::now() + std::chrono::days(4);
         auto lastDayTime = TimeUtil::timeToTM(lastDayInWeek);
         auto lastDayInWeekString = TimeUtil::timeToStringForAPI(lastDayTime);
 
