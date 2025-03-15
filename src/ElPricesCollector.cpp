@@ -65,7 +65,7 @@ void ElPricesCollector::keepUpdated()
         auto firstDayTime = TimeUtil::timeToTM(firstDayInWeek);
         auto firstDayInWeekString = TimeUtil::timeToStringForAPI(firstDayTime);
 
-        auto lastDayInWeek = std::chrono::system_clock::now() + std::chrono::days(6 - currentTime.tm_wday);
+        auto lastDayInWeek = std::chrono::system_clock::now() + std::chrono::days(7 - currentTime.tm_wday);
         auto lastDayTime = TimeUtil::timeToTM(lastDayInWeek);
         auto lastDayInWeekString = TimeUtil::timeToStringForAPI(lastDayTime);
 
