@@ -209,7 +209,7 @@ void ElPricesStorageController::handleParsedData(const std::string& parsedData)
 
 void ElPricesStorageController::copyToFileDataBase() const
 {
-    int lockKey = DatabaseAccessController::lockDatabase("PRICEDB");
+    auto dbLock = DatabaseAccessController::getDatabase("PRICEDB");
     try
     {
         std::string todayLookupString = TimeUtil::getCurrentTimeAsDateString();
@@ -225,7 +225,7 @@ void ElPricesStorageController::copyToFileDataBase() const
             std::string dateString = selectionQuery.getColumn(3).getString();
             int hour = selectionQuery.getColumn(4).getInt();
 
-            SQLite::Statement sqlInsertStatement(*db_,"INSERT OR IGNORE INTO Prices(Raw,Fee,Date,Hour) VALUES (?,?,?,?);");
+            SQLite::Statement sqlInsertStatement(*dbLock->getDatabase(),"INSERT OR IGNORE INTO Prices(Raw,Fee,Date,Hour) VALUES (?,?,?,?);");
             sqlInsertStatement.bind(1,priceWithoutFees);
             sqlInsertStatement.bind(2,fee);
             sqlInsertStatement.bind(3,dateString);
@@ -244,19 +244,18 @@ void ElPricesStorageController::copyToFileDataBase() const
         std::string debugText = e.what();
         DebugController::debugWrite("CopyToFileDataBase(): " + debugText);
     }
-    DatabaseAccessController::unlockDatabase("PRICEDB", lockKey);
 }
 
 void ElPricesStorageController::initMemoryDBFromFile() const
 {
-    int lockKey = DatabaseAccessController::lockDatabase("PRICEDB");
+    auto dbLock = DatabaseAccessController::getDatabase("PRICEDB");
     try
     {
 
         std::string todayLookupString = TimeUtil::getCurrentTimeAsDateString();
         std::string tmrwLookupString = TimeUtil::timeToStringForLookup(TimeUtil::getTommorowTime());
 
-        SQLite::Statement selectionQuery(*db_, "SELECT * FROM Prices WHERE Date == ? OR Date == ?");
+        SQLite::Statement selectionQuery(*dbLock->getDatabase(), "SELECT * FROM Prices WHERE Date == ? OR Date == ?");
         selectionQuery.bind(1,todayLookupString);
         selectionQuery.bind(2,tmrwLookupString);
 
@@ -281,7 +280,6 @@ void ElPricesStorageController::initMemoryDBFromFile() const
         std::string debugText = e.what();
         DebugController::debugWrite("InitMemoryDBFromFile(): " + debugText);
     }
-    DatabaseAccessController::unlockDatabase("PRICEDB", lockKey);
 }
 
 void ElPricesStorageController::reloadFees()
