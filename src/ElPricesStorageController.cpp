@@ -39,7 +39,11 @@ void ElPricesStorageController::insertHourPriceToDB(const std::string& dateStrin
     try
     {
         auto memoryDB = DatabaseAccessController::getDatabase("priceMemoryDB");
-        SQLite::Statement sqlInsertStatement(*memoryDB->getDatabase(),"INSERT OR UPDATE INTO Prices(Raw,Fee,Date,Hour) VALUES (?,?,?,?);");
+        std::string query = "INSERT INTO Prices (Raw, Fee, Date, Hour) "
+                  "VALUES (?, ?, ?, ?) "
+                  "ON CONFLICT(Date, Hour) DO UPDATE SET "
+                  "Fee = excluded.Fee;";
+        SQLite::Statement sqlInsertStatement(*memoryDB->getDatabase(),query);
         sqlInsertStatement.bind(1,hourPrice->getPriceWithoutFees());
         sqlInsertStatement.bind(2,hourPrice->getFees());
         sqlInsertStatement.bind(3,dateStringWithHour);
@@ -229,8 +233,11 @@ void ElPricesStorageController::copyToFileDataBase() const
             int fee = selectionQuery.getColumn(2).getInt();
             std::string dateString = selectionQuery.getColumn(3).getString();
             int hour = selectionQuery.getColumn(4).getInt();
-
-            SQLite::Statement sqlInsertStatement(*dbLock->getDatabase(),"INSERT OR UPDATE INTO Prices(Raw,Fee,Date,Hour) VALUES (?,?,?,?);");
+            std::string query = "INSERT INTO Prices (Raw, Fee, Date, Hour) "
+                  "VALUES (?, ?, ?, ?) "
+                  "ON CONFLICT(Date, Hour) DO UPDATE SET "
+                  "Fee = excluded.Fee;";
+            SQLite::Statement sqlInsertStatement(*dbLock->getDatabase(),query);
             sqlInsertStatement.bind(1,priceWithoutFees);
             sqlInsertStatement.bind(2,fee);
             sqlInsertStatement.bind(3,dateString);
