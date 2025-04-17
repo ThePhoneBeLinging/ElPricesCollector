@@ -14,12 +14,13 @@
 
 
 ElPricesStorageController::ElPricesStorageController() : db_(std::make_shared<SQLite::Database>("../../HistoricData/Prices.db", SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
-, memoryDB_(std::make_unique<SQLite::Database>(":memory:",SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
+, memoryDB_(std::make_shared<SQLite::Database>(":memory:",SQLite::OPEN_READWRITE|SQLite::OPEN_CREATE))
 , feeController_(std::make_unique<FeeController>())
 {
     std::cout << "ElPricesStorageController::ElPricesStorageController()" << std::endl;
 
     DatabaseAccessController::addDatabase(db_,"PRICEDB");
+    DatabaseAccessController::addDatabase(memoryDB_,"priceMemoryDB");
 
     // This part of the constructor creates a Table with the same specifications of the file-based DB
     std::string query = "SELECT sql FROM sqlite_master WHERE type='table' AND name='Prices';";
@@ -37,7 +38,8 @@ void ElPricesStorageController::insertHourPriceToDB(const std::string& dateStrin
 {
     try
     {
-        SQLite::Statement sqlInsertStatement(*memoryDB_,"INSERT OR IGNORE INTO Prices(Raw,Fee,Date,Hour) VALUES (?,?,?,?);");
+        auto memoryDB = DatabaseAccessController::getDatabase("priceMemoryDB");
+        SQLite::Statement sqlInsertStatement(*memoryDB->getDatabase(),"INSERT OR UPDATE INTO Prices(Raw,Fee,Date,Hour) VALUES (?,?,?,?);");
         sqlInsertStatement.bind(1,hourPrice->getPriceWithoutFees());
         sqlInsertStatement.bind(2,hourPrice->getFees());
         sqlInsertStatement.bind(3,dateStringWithHour);
@@ -55,7 +57,8 @@ std::shared_ptr<HourPrice> ElPricesStorageController::getHourPriceFromMemoryDB(c
 {
     try
     {
-        SQLite::Statement selectStatement(*memoryDB_, "SELECT * FROM Prices WHERE Date == ? AND Hour == ?");
+        auto memoryDB = DatabaseAccessController::getDatabase("priceMemoryDB");
+        SQLite::Statement selectStatement(*memoryDB->getDatabase(), "SELECT * FROM Prices WHERE Date == ? AND Hour == ?");
         selectStatement.bind(1,dateString);
         selectStatement.bind(2,hour);
 
@@ -85,7 +88,8 @@ std::vector<std::shared_ptr<HourPrice>> ElPricesStorageController::getCurrentAnd
         std::vector<std::shared_ptr<HourPrice>> hourPrices;
         hourPrices.resize(48);
 
-        SQLite::Statement selectStatement(*memoryDB_, "SELECT * FROM Prices WHERE Date == ? OR Date == ?");
+        auto memoryDB = DatabaseAccessController::getDatabase("priceMemoryDB");
+        SQLite::Statement selectStatement(*memoryDB->getDatabase(), "SELECT * FROM Prices WHERE Date == ? OR Date == ?");
         selectStatement.bind(1,dateString);
         selectStatement.bind(2,tmrwDateString);
 
@@ -215,7 +219,8 @@ void ElPricesStorageController::copyToFileDataBase() const
         std::string todayLookupString = TimeUtil::getCurrentTimeAsDateString();
         std::string tmrwLookupString = TimeUtil::timeToStringForLookup(TimeUtil::getTommorowTime());
 
-        SQLite::Statement selectionQuery(*memoryDB_, "SELECT * FROM Prices");
+        auto memoryDB = DatabaseAccessController::getDatabase("priceMemoryDB");
+        SQLite::Statement selectionQuery(*memoryDB->getDatabase(), "SELECT * FROM Prices");
 
         while (selectionQuery.executeStep())
         {
@@ -233,7 +238,7 @@ void ElPricesStorageController::copyToFileDataBase() const
             sqlInsertStatement.exec();
         }
 
-        SQLite::Statement deleteStatement(*memoryDB_,"DELETE FROM Prices WHERE Date != ? AND Date != ?");
+        SQLite::Statement deleteStatement(*memoryDB->getDatabase(),"DELETE FROM Prices WHERE Date != ? AND Date != ?");
         deleteStatement.bind(1,todayLookupString);
         deleteStatement.bind(2,tmrwLookupString);
         deleteStatement.exec();
@@ -249,6 +254,7 @@ void ElPricesStorageController::copyToFileDataBase() const
 void ElPricesStorageController::initMemoryDBFromFile() const
 {
     auto dbLock = DatabaseAccessController::getDatabase("PRICEDB");
+    auto memoryDB = DatabaseAccessController::getDatabase("priceMemoryDB");
     try
     {
 
@@ -267,7 +273,7 @@ void ElPricesStorageController::initMemoryDBFromFile() const
             std::string dateString = selectionQuery.getColumn(3).getString();
             int hour = selectionQuery.getColumn(4).getInt();
 
-            SQLite::Statement sqlInsertStatement(*memoryDB_,"INSERT OR IGNORE INTO Prices(Raw,Fee,Date,Hour) VALUES (?,?,?,?);");
+            SQLite::Statement sqlInsertStatement(*memoryDB->getDatabase(),"INSERT OR IGNORE INTO Prices(Raw,Fee,Date,Hour) VALUES (?,?,?,?);");
             sqlInsertStatement.bind(1,priceWithoutFees);
             sqlInsertStatement.bind(2,fee);
             sqlInsertStatement.bind(3,dateString);
