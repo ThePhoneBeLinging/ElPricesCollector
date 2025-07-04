@@ -81,6 +81,12 @@ void ElPricesCollector::keepUpdated()
         storageController_->handleParsedData(r.text);
         constructorReadyForCompletion_ = true;
         int secondsToWait = TimeUtil::secondsToNextHour();
+
+        if (currentTime.tm_hour == 14)
+        {
+            secondsToWait = 5 * 60;
+        }
+
         conditionVariable_.wait_for(lock, std::chrono::seconds(secondsToWait));
     }
 }
