@@ -24,7 +24,6 @@ public:
 
     void update();
 private:
-    std::atomic_bool constructorReadyForCompletion_;
     std::shared_ptr<ElPricesStorageController> storageController_;
 };
 

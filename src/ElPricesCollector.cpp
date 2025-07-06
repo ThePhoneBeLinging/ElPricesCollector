@@ -13,7 +13,6 @@
 #include "Utility/DebugController.h"
 
 ElPricesCollector::ElPricesCollector() : storageController_(std::make_shared<ElPricesStorageController>())
-                                         , constructorReadyForCompletion_(false)
 {
     storageController_->initMemoryDBFromFile();
     update();
@@ -66,5 +65,4 @@ void ElPricesCollector::update()
         DebugController::debugWrite("Status code was not 200, it was: " + std::to_string(r.status_code));
     }
     storageController_->handleParsedData(r.text);
-    constructorReadyForCompletion_ = true;
 }
