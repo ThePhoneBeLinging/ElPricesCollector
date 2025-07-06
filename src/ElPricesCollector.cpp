@@ -16,10 +16,7 @@ ElPricesCollector::ElPricesCollector() : storageController_(std::make_shared<ElP
                                          , constructorReadyForCompletion_(false)
 {
     storageController_->initMemoryDBFromFile();
-    while (not constructorReadyForCompletion_)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    }
+    update();
 }
 
 std::shared_ptr<HourPrice> ElPricesCollector::getCurrentPrice()
