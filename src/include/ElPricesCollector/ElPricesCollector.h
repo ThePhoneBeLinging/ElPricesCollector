@@ -16,18 +16,15 @@ class ElPricesCollector
 {
 public:
     ElPricesCollector();
-    ~ElPricesCollector();
+    ~ElPricesCollector() = default;
 
     std::shared_ptr<HourPrice> getCurrentPrice();
     std::shared_ptr<HourPrice> getPriceBasedOnSecondsAgo(int seconds);
     std::vector<std::shared_ptr<HourPrice>> getCurrentAndFuturePrices();
 
+    void update();
 private:
-    void keepUpdated();
-    std::atomic<bool> keepRunningBool_;
     std::atomic_bool constructorReadyForCompletion_;
-    std::thread updatingThread_;
-    std::condition_variable conditionVariable_;
     std::shared_ptr<ElPricesStorageController> storageController_;
 };
 
