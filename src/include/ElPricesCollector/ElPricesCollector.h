@@ -19,14 +19,15 @@ public:
     ~ElPricesCollector() = default;
 
     std::shared_ptr<HourPrice> getCurrentPrice();
+    std::shared_ptr<HourPrice> getLastPrice() const;
     std::shared_ptr<HourPrice> getPriceBasedOnSecondsAgo(int seconds);
     std::vector<std::shared_ptr<HourPrice>> getCurrentAndFuturePrices();
 
     void update();
+
 private:
     std::shared_ptr<ElPricesStorageController> storageController_;
 };
-
 
 
 #endif //ELPRICESCOLLECTOR_H
